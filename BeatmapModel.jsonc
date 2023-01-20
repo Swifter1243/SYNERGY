@@ -1,0 +1,48 @@
+/*
+The structure for this will be heavily inspired by Beat Saber, as I am very familiar with it's systems.
+
+Basically you have a central Info.dat that holds all the data for the difficulties,
+each with their own .dat files containing what events go on in them.
+
+Stuff is subject to change.
+*/
+
+// Beatmap
+{
+    "notes": [ // Note events
+        {
+            "time": 10, // Beat to slice
+            "primary": true, // If active, blue note hit with primary cursor. Else pink note hit with secondary.
+            "direction": 20, // Direction in degrees to slice. Optional.
+            "x": 0,
+            "y": 0
+        }
+    ],
+    "swaps": [ // Mirror cross events
+        {
+            "time": 10, // Beat to swap
+            "type": "x" // The type of mirror to cross. "x" or "y".
+        }
+    ],
+    "bpmChanges": [ // BPM Changes
+        {
+            "time": 10, // Start of change
+            "endTime": 20, // End of change. Optional, "end" will be ignored if not provided.
+            "start": 100, // Start BPM
+            "end": 120 // End BPM
+        }
+        // NOTE: Every "time" value is measured in terms of the base BPM.
+    ]
+}
+
+
+// Info
+{
+    "name": "Song Name", // Song name
+    "artist": "Song Author", // Song author
+    "mapper": "Mapper", // Mapper
+    "BPM": 100, // Base BPM
+    "art": "cover.jpg", // Cover art file name
+}
+
+// "normal.dat" "hard.dat" "expert.dat"
