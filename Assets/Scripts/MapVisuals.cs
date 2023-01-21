@@ -68,8 +68,8 @@ public class MapVisuals : MonoBehaviour
         var verticalSwaps = diff.swaps.FindAll(x => x.type == Beatmap.SwapType.Vertical && x.time <= beat);
         var horizontalSwaps = diff.swaps.FindAll(x => x.type == Beatmap.SwapType.Horizontal && x.time <= beat);
 
-        var newVerticalMirror = verticalSwaps.Count % 2 == 0;
-        var newHorizontalMirror = horizontalSwaps.Count % 2 == 0;
+        var newVerticalMirror = verticalSwaps.Count % 2 == 1;
+        var newHorizontalMirror = horizontalSwaps.Count % 2 == 1;
 
         if ((newVerticalMirror != verticalMirror || newHorizontalMirror != horizontalMirror))
         {
@@ -84,13 +84,13 @@ public class MapVisuals : MonoBehaviour
         CheckSwaps();
 
         // Vertical Animation
-        if (!verticalMirror && verticalMirrorAnim < 1)
+        if (verticalMirror && verticalMirrorAnim < 1)
         {
             if (1 - verticalMirrorAnim < animThreshold) verticalMirrorAnim = 1;
             verticalMirrorAnim = Utils.Approach(verticalMirrorAnim, 1, 20);
             verticalMirrorMat.SetFloat("_Cutoff", verticalMirrorAnim);
         }
-        if (verticalMirror && verticalMirrorAnim > 0)
+        if (!verticalMirror && verticalMirrorAnim > 0)
         {
             if (verticalMirrorAnim < animThreshold) verticalMirrorAnim = 0;
             verticalMirrorAnim = Utils.Approach(verticalMirrorAnim, 0, 20);
@@ -98,13 +98,13 @@ public class MapVisuals : MonoBehaviour
         }
 
         // Horizontal Animation
-        if (!horizontalMirror && horizontalMirrorAnim < 1)
+        if (horizontalMirror && horizontalMirrorAnim < 1)
         {
             if (1 - horizontalMirrorAnim < animThreshold) horizontalMirrorAnim = 1;
             horizontalMirrorAnim = Utils.Approach(horizontalMirrorAnim, 1, 20);
             horizontalMirrorMat.SetFloat("_Cutoff", horizontalMirrorAnim);
         }
-        if (horizontalMirror && horizontalMirrorAnim > 0)
+        if (!horizontalMirror && horizontalMirrorAnim > 0)
         {
             if (horizontalMirrorAnim < animThreshold) horizontalMirrorAnim = 0;
             horizontalMirrorAnim = Utils.Approach(horizontalMirrorAnim, 0, 20);

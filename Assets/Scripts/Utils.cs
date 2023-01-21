@@ -156,4 +156,8 @@ public class Utils : MonoBehaviour
     public static string GetDiffPath(string songPath, string diff) => songPath + "\\" + diff + ".dat";
     public static string GetAudioPath(string songPath, Beatmap.Info info) => songPath + "\\" + info.song;
     public static string GetVideoPath(string songPath, Beatmap.Info info) => songPath + "\\" + info.video;
+    public static float MirrorAngleX(float angle) {
+        angle = (180 - angle) % 360;
+        return angle < 0 ? 360 + angle : angle;
+    }
 }

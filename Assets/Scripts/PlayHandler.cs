@@ -126,8 +126,8 @@ public class PlayHandler : MonoBehaviour
 
         mapVisuals.onMirrorUpdate = () =>
         {
-            horizontalMirror = !mapVisuals.horizontalMirror;
-            verticalMirror = !mapVisuals.verticalMirror;
+            horizontalMirror = mapVisuals.horizontalMirror;
+            verticalMirror = mapVisuals.verticalMirror;
             CursorVisibility();
             UpdateSecondaryCursor();
         };

@@ -33,8 +33,6 @@ public class TransformGizmo : MonoBehaviour
     static Vector3 startCursorPos;
     static bool lockedX = false;
     static bool lockedY = false;
-    static bool horizontalMirror = false;
-    static bool verticalMirror = false;
     static bool startVertical = false;
 
     // Rotation
@@ -125,12 +123,39 @@ public class TransformGizmo : MonoBehaviour
         // Duplicate Object
         if (Input.GetKeyDown(KeyCode.D) && !duplicating)
         {
-            Beatmap.GameplayObject newObj = Beatmap.Copy(referenceObj);
+            var newObj = Beatmap.Copy(referenceObj);
 
             editorHandler.AddObject(newObj);
             Select(mapVisuals.onScreenObjs[newObj]);
             StartTranslation();
             duplicating = true;
+        }
+
+        // Mirror Object
+        if (Input.GetKeyDown(KeyCode.T) && referenceObj is Beatmap.Note note)
+        {
+            var horizontalMirror = mapVisuals.horizontalMirror;
+            var verticalMirror = mapVisuals.verticalMirror;
+
+            var horizontalPressed = Input.GetKey(KeyCode.F1);
+            var verticalPressed = Input.GetKey(KeyCode.F2);
+
+            if (horizontalPressed || verticalPressed)
+            {
+                horizontalMirror = horizontalPressed;
+                verticalMirror = verticalPressed;
+            }
+
+            if (!horizontalMirror && !verticalMirror) return;
+
+            var newNote = Beatmap.Copy(note);
+
+            newNote.primary = !newNote.primary;
+            if (horizontalMirror) newNote.y = 1 - newNote.y;
+            if (verticalMirror) newNote.x = 1 - newNote.x;
+            if (horizontalMirror != verticalMirror) newNote.direction = Utils.MirrorAngleX(newNote.direction);
+
+            editorHandler.AddObject(newNote, true);
         }
 
         // Time Dragging (Press)
@@ -175,12 +200,6 @@ public class TransformGizmo : MonoBehaviour
             lockedY = !lockedY;
         }
 
-        // Activating Horizontal Mirror
-        if (Input.GetKeyDown(KeyCode.F1)) horizontalMirror = !horizontalMirror;
-
-        // Activating Vertical Mirror
-        if (Input.GetKeyDown(KeyCode.F2)) verticalMirror = !verticalMirror;
-
         // Finishing Translation From Click
         if (Input.GetMouseButtonDown(0) && transformMode == TransformMode.TRANSLATING && !dragging && !Input.GetKey(KeyCode.C)) FinishTranslation();
 
@@ -192,11 +211,7 @@ public class TransformGizmo : MonoBehaviour
                 var delta = Input.mousePosition - startCursorPos;
                 if (lockedX) delta.y = 0;
                 if (lockedY) delta.x = 0;
-                if (horizontalMirror || verticalMirror) delta = new Vector2();
                 var pos = startPos + delta;
-                pos = EditorHandler.VisualToScreen(pos);
-                pos = PlayHandler.GetMirroredCursor(pos, horizontalMirror, verticalMirror);
-                pos = EditorHandler.ScreenToVisual(pos);
 
                 if (guides.Count > 0)
                 {
@@ -365,8 +380,6 @@ public class TransformGizmo : MonoBehaviour
         {
             lockedX = false;
             lockedY = false;
-            horizontalMirror = false;
-            verticalMirror = false;
             startPos = selectedObj.transform.position;
             startCursorPos = Input.mousePosition;
         }
@@ -379,7 +392,8 @@ public class TransformGizmo : MonoBehaviour
     {
         if (selectedObj == null) return;
 
-        if (duplicating) {
+        if (duplicating)
+        {
             var obj = referenceObj;
             Deselect();
             EditorHandler.RemoveObject(obj);

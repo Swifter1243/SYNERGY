@@ -810,6 +810,16 @@ MonoBehaviour:
     Ctrl + V
 
 
+    T
+
+    F1
+    + T
+
+    F2 + T
+
+    F1 + F2 + T
+
+
     1
 
     2
@@ -826,10 +836,6 @@ MonoBehaviour:
     X
 
     Z
-
-    F1
-
-    F2
 
     D
 
@@ -2041,6 +2047,16 @@ MonoBehaviour:
     Paste
 
 
+    Mirror Note
+
+    Mirror
+    Horizontally
+
+    Mirror Vertically
+
+    Mirror Both
+
+
     Delete Mode
 
     Transform
@@ -2060,19 +2076,15 @@ MonoBehaviour:
     Lock
     Y Axis
 
-    Mirror X Axis
-
-    Mirror Y Axis
-
     Duplicate
 
     Move Time
 
 
-    Toggle
-    Primary Note
+    Toggle Primary Note
 
-    Toggle Axis Note'
+    Toggle Axis
+    Note'
 --- !u!222 &712906038
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2916,8 +2928,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 20.767, y: 488}
-  m_SizeDelta: {x: 333.71643, y: 856.72504}
+  m_AnchoredPosition: {x: 20.767, y: 526.8}
+  m_SizeDelta: {x: 333.71643, y: 934.3497}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1030096626
 MonoBehaviour:
@@ -6141,6 +6153,11 @@ PrefabInstance:
       propertyPath: horizontalMirrorMat
       value: 
       objectReference: {fileID: 2100000, guid: 836aa1d2c708b364e986eb89a24a2e3b, type: 2}
+    - target: {fileID: 3346394772630240070, guid: 8e57be2f6e85e214ab1d81b0649d2871,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -0.10070801
+      objectReference: {fileID: 0}
     - target: {fileID: 3346394772630240070, guid: 8e57be2f6e85e214ab1d81b0649d2871,
         type: 3}
       propertyPath: m_AnchoredPosition.y
