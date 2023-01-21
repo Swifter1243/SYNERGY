@@ -39,6 +39,8 @@ public class Settings : MonoBehaviour
             noFail = Utils.InitPlayerPrefsInt("noFail", 0) == 1;
         }
 
+        if (Screen.fullScreenMode == FullScreenMode.FullScreenWindow) windowedResolution = new Vector2(Screen.width, Screen.height);
+
         masterVolumeObj.value = masterVolume;
         displayObj.value = (int)display;
         noFailObj.isOn = noFail;

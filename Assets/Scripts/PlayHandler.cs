@@ -151,6 +151,9 @@ public class PlayHandler : MonoBehaviour
         audioSource.Play();
         mapVisuals.PlayVideo(true);
         songBeats = Utils.GetSongBeats(audioSource.clip.length, info.BPM);
+
+        var maxTime = TimeSpan.FromSeconds(audioSource.clip.length);
+        maxTimeText = maxTime.ToString(@"m\:ss");
     }
 
     bool paused = false;
@@ -228,10 +231,28 @@ public class PlayHandler : MonoBehaviour
 
         animations.ForEach(x => { x.Animate(seconds); });
         mapVisuals.UpdateBeat(beat);
+        UpdateText();
 
-        if (beat > songBeats) {
+        if (beat > songBeats)
+        {
             LevelEndHandler.won = true;
             Transition.Load("LevelEnd");
+        }
+    }
+
+    public Text timeText;
+    public Text scoreText;
+    string maxTimeText;
+
+    void UpdateText()
+    {
+        var currentTime = TimeSpan.FromSeconds(seconds);
+        var currentTimeText = currentTime.ToString(@"m\:ss");
+        timeText.text = currentTimeText + " / " + maxTimeText;
+
+        if (updateScoreText) {
+            scoreText.text = "Score: " + score;
+            updateScoreText = false;
         }
     }
 
@@ -284,19 +305,23 @@ public class PlayHandler : MonoBehaviour
     }
 
     static float missStreak = 0;
+    static bool updateScoreText = false;
     public static void AddScore(float value)
     {
         score += Mathf.Round(value);
         notesHit++;
         health = Mathf.Clamp(health + value, 0, maxHealth);
         missStreak = 0;
+        updateScoreText = true;
     }
+    
     public static void Miss()
     {
         missStreak++;
         var missVal = -missScore * missStreak;
         health = Mathf.Clamp(health + missVal, 0, maxHealth);
-        if (health == 0 && !Settings.noFail) {
+        if (health == 0 && !Settings.noFail)
+        {
             LevelEndHandler.won = false;
             Transition.Load("LevelEnd");
         }
