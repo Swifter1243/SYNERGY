@@ -4,7 +4,7 @@ Welcome to SYNERGY!
 
 This is a game I've made for a school project. I've decided to make it public to see what the general public has to say/add to it.
 
-The game is about slicing blocks to the beat of music, with a twist!
+The game is about slicing notes to the beat of music, with a twist!
 
 ![gameplay_1](https://user-images.githubusercontent.com/61858676/213904958-f59e44ba-268f-445a-b50d-e0ffdc3c18ef.gif)
 
