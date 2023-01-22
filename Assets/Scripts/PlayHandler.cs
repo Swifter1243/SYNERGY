@@ -107,12 +107,14 @@ public class PlayHandler : MonoBehaviour
     List<IntroAnimation> animations = new List<IntroAnimation>();
 
     public Texture2D cursorTexture;
+    public GameObject UI;
 
     void Start()
     {
         cursorTransform = secondaryCursor.GetComponent<RectTransform>();
         Cursor.SetCursor(cursorTexture, Vector2.zero, CursorMode.ForceSoftware);
         CursorVisibility();
+        if (Settings.hideUI) UI.SetActive(false);
 
         score = 0;
         notesHit = 0;

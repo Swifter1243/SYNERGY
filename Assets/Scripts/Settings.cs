@@ -17,12 +17,14 @@ public class Settings : MonoBehaviour
     public static float masterVolume;
     public static DisplayMode display;
     public static bool noFail;
+    public static bool hideUI;
 
     // Objects
     public Slider masterVolumeObj;
     public Text masterVolumeText;
     public Dropdown displayObj;
     public Toggle noFailObj;
+    public Toggle hideUIObj;
 
     static Vector2 initResolution;
     static Vector2 windowedResolution;
@@ -37,6 +39,7 @@ public class Settings : MonoBehaviour
             masterVolume = Utils.InitPlayerPrefsFloat("masterVolume", 1);
             display = (DisplayMode)Utils.InitPlayerPrefsInt("display", (int)DisplayMode.Fullscreen);
             noFail = Utils.InitPlayerPrefsInt("noFail", 0) == 1;
+            hideUI = Utils.InitPlayerPrefsInt("hideUI", 0) == 1;
         }
 
         if (Screen.fullScreenMode == FullScreenMode.FullScreenWindow) windowedResolution = new Vector2(Screen.width, Screen.height);
@@ -44,10 +47,12 @@ public class Settings : MonoBehaviour
         masterVolumeObj.value = masterVolume;
         displayObj.value = (int)display;
         noFailObj.isOn = noFail;
+        hideUIObj.isOn = hideUI;
 
         UpdateMasterVolume();
         UpdateDisplay();
         UpdateNoFail();
+        UpdateHideUI();
     }
 
     public void UpdateMasterVolume()
@@ -78,6 +83,11 @@ public class Settings : MonoBehaviour
     public void UpdateNoFail() {
         noFail = noFailObj.isOn;
         PlayerPrefs.SetInt("noFail", noFail ? 1 : 0);
+    }
+
+    public void UpdateHideUI() {
+        hideUI = hideUIObj.isOn;
+        PlayerPrefs.SetInt("hideUI", hideUI ? 1 : 0);
     }
 
     public void Close() => this.gameObject.SetActive(false);

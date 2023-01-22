@@ -24,6 +24,7 @@ public class Hit : MonoBehaviour
             text.color = new Color(1, 0.8f, 0.8f);
         }
         else if (!(bool)goodHit) text.color = new Color(1, 0.5f, 0.5f);
+        if (Settings.hideUI) text.color = new Color(0, 0, 0, 0);
 
         var width = 200;
         rect = this.GetComponent<RectTransform>();

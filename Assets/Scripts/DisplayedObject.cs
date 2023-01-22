@@ -262,7 +262,6 @@ public class DisplayedObject : MonoBehaviour
             }
             else PlayHandler.Miss();
 
-            var pos = positions[0];
             var rot = AngleFromVector(cursorVec);
             var hitObj = Instantiate(hit);
             hitObj.transform.SetParent(this.gameObject.transform.parent);

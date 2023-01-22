@@ -1493,6 +1493,7 @@ MonoBehaviour:
   cover: {fileID: 1370315109}
   mapVisuals: {fileID: 2016506136}
   cursorTexture: {fileID: 2800000, guid: 4a51ae08bdb55614c85ad151fca2d61e, type: 3}
+  UI: {fileID: 1510240007}
   pauseMenu: {fileID: 158164324}
   secondaryCursor: {fileID: 1439203632}
   timeText: {fileID: 1848225755}
