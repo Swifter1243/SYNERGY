@@ -22,4 +22,5 @@ public class TitleScreenHandler : MonoBehaviour
     public void Editor() => Transition.Load("EditorSongs");
     public void SongSelection() => Transition.Load("SongSelection");
     public void Tutorial() => Transition.Load("Tutorial");
+    public void Exit() => Application.Quit();
 }
