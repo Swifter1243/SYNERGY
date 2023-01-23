@@ -136,7 +136,7 @@ public class PlayHandler : MonoBehaviour
 
         // Video
         var videoPath = Utils.GetVideoPath(Beatmap.Active.songPath, info);
-        mapVisuals.LoadVideo(videoPath, info);
+        mapVisuals.LoadVideo(videoPath);
 
         animations.Add(new IntroAnimation(title, 0.5f, title.GetComponent<RectTransform>()));
         animations.Add(new IntroAnimation(artist, 0.6f, artist.GetComponent<RectTransform>()));

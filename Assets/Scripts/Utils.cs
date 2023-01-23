@@ -21,6 +21,8 @@ public class Utils : MonoBehaviour
         var inRange = number - min;
         return inRange / difference;
     }
+    public static float SetLenience(float lenience, float value) => value >= lenience ? 1 : value / lenience;
+
     public static Color ChangeAlpha(Color color, float alpha) => ChangeColor(color, x =>
     {
         x.a = alpha;

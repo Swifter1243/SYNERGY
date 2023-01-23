@@ -9,6 +9,7 @@ using System.IO;
 public class MapVisuals : MonoBehaviour
 {
     public Beatmap.Difficulty diff;
+    Beatmap.Info info { get => Beatmap.Active.info; }
     public float beat;
     public GameObject displayedNote;
     public GameObject displayedSwap;
@@ -123,15 +124,11 @@ public class MapVisuals : MonoBehaviour
     public GameObject video;
     public RawImage videoTexture;
     public VideoPlayer videoPlayer;
-    float videoOffset;
-    float BPM;
     bool playing = false;
 
-    public void LoadVideo(string path, Beatmap.Info info)
+    public void LoadVideo(string path)
     {
         if (!File.Exists(path)) return;
-        this.videoOffset = info.videoOffset;
-        this.BPM = info.BPM;
         video.SetActive(true);
         videoPlayer = video.GetComponent<VideoPlayer>();
         videoPlayer.url = path;
@@ -142,8 +139,8 @@ public class MapVisuals : MonoBehaviour
 
     void UpdateVideo()
     {
-        var videoBeat = beat - videoOffset;
-        var seconds = Utils.BeatToSeconds(videoBeat, BPM);
+        var videoBeat = beat - info.videoOffset;
+        var seconds = Utils.BeatToSeconds(videoBeat, info.BPM);
         var isOn = videoBeat >= 0;
         videoTexture.color = Utils.ChangeAlpha(videoTexture.color, isOn ? 1 : 0);
         videoPlayer.time = seconds;
@@ -247,9 +244,9 @@ public class MapVisuals : MonoBehaviour
 
     public bool isOnScreen(Beatmap.GameplayObject obj)
     {
-        var difference = obj.time - beat;
-        if (difference < -Beatmap.Active.spawnOut) return false;
-        if (difference > Beatmap.Active.spawnIn) return false;
+        var difference = Utils.BeatToSeconds(obj.time - beat, info.BPM);
+        if (difference < -Beatmap.Active.spawnOutSeconds) return false;
+        if (difference > Beatmap.Active.spawnInSeconds) return false;
         return true;
     }
 

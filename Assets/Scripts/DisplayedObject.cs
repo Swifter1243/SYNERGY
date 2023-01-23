@@ -24,6 +24,9 @@ public class DisplayedObject : MonoBehaviour
     public RawImage side2Bottom;
     public RawImage side2Top;
 
+
+    Beatmap.Info info { get => Beatmap.Active.info; }
+
     public void Initialize(Beatmap.GameplayObject referenceObj)
     {
         this.referenceObj = referenceObj;
@@ -74,12 +77,17 @@ public class DisplayedObject : MonoBehaviour
         if (lastBeat == beat) return;
         lastBeat = beat;
 
-        var time = referenceObj.time;
-        var spawnIn = time - Beatmap.Active.spawnIn;
-        var spawnOut = time + Beatmap.Active.spawnOut;
+        // Get object time in seconds
+        var time = Utils.BeatToSeconds(referenceObj.time, info.BPM);
+        var seconds = Utils.BeatToSeconds(beat, info.BPM);
 
-        var spawnInFrac = Utils.GetFraction(spawnIn, time, beat);
-        var spawnOutFrac = Utils.GetFraction(time, spawnOut, beat);
+        // Get the times of start and ending
+        var startTime = time - Beatmap.Active.spawnInSeconds;
+        var endTime = time + Beatmap.Active.spawnOutSeconds;
+
+        // Get the fraction for both sides
+        var spawnInFrac = Utils.GetFraction(startTime, time, seconds);
+        var spawnOutFrac = Utils.GetFraction(time, endTime, seconds);
 
         isNote = referenceObj is Beatmap.Note;
 
@@ -174,18 +182,20 @@ public class DisplayedObject : MonoBehaviour
         }
     }
 
-    public bool IsDespawning(float beat) => beat - referenceObj.time > Beatmap.Active.spawnOut / 2;
+    public float SecondsUntilTime(float beat) => Utils.BeatToSeconds(referenceObj.time - beat, info.BPM);
+
+    public bool IsDespawning(float beat) => SecondsUntilTime(beat) < -Beatmap.Active.spawnOutSeconds / 2;
 
     public bool IsSelectable(float beat)
     {
-        if (referenceObj.time - beat > Beatmap.Active.spawnIn / 2) return false;
+        if (SecondsUntilTime(beat) > Beatmap.Active.spawnInSeconds / 2) return false;
         if (IsDespawning(beat)) return false;
         return true;
     }
 
     public bool IsHittable(float beat)
     {
-        if (referenceObj.time - beat > 1) return false;
+        if (SecondsUntilTime(beat) > Beatmap.Active.hittableSeconds) return false;
         if (IsDespawning(beat)) return false;
         return true;
     }
@@ -286,8 +296,9 @@ public class DisplayedObject : MonoBehaviour
         var line = new Ray(pos, vec);
         var center = this.gameObject.transform.position;
         var dist = Vector3.Cross(line.direction, center - line.origin).magnitude;
+        var score = 1 - Mathf.Min(1, dist / (Beatmap.noteSize / 2));
 
-        return 1 - Mathf.Min(1, dist / (Beatmap.noteSize / 2));
+        return Utils.SetLenience(1 - Beatmap.NoteScore.centerLenience, score);
     }
 
     float GetAxisScore(Vector3 cursorVec, float direction)
@@ -297,19 +308,37 @@ public class DisplayedObject : MonoBehaviour
         var dirVec2 = Utils.GetPosFromAngle((dir2 + 90) % 360);
         var diff1 = Vector2.Angle(cursorVec, dirVec1);
         var diff2 = Vector2.Angle(cursorVec, dirVec2);
-        return 1 - (Mathf.Min(diff1, diff2) / 90);
+        var score = 1 - (Mathf.Min(diff1, diff2) / 90);
+
+        return Utils.SetLenience(1 - Beatmap.NoteScore.angleLenience, score);
     }
 
     float GetTimingScore()
     {
-        var beat = Utils.SecondsToBeat(PlayHandler.seconds, PlayHandler.info.BPM);
-        var time = referenceObj.time;
-        var startTime = time - (Beatmap.Active.spawnIn);
-        var endTime = time + (Beatmap.Active.spawnOut);
-        var inFrac = Utils.GetFraction(startTime, time, beat);
-        var outFrac = Utils.GetFraction(time, endTime, beat);
+        // Get object time in seconds
+        var time = Utils.BeatToSeconds(referenceObj.time, info.BPM);
 
-        if (inFrac != -1) return inFrac;
-        else return Utils.EaseOutSine(1 - outFrac);
+        // Get the times of start and ending
+        var startTime = time - Beatmap.Active.hittableSeconds;
+        var endTime = time + Beatmap.Active.spawnOutSeconds;
+
+        // Get the fraction for both sides
+        var inFrac = Utils.GetFraction(startTime, time, PlayHandler.seconds);
+        var outFrac = Utils.GetFraction(time, endTime, PlayHandler.seconds);
+
+        // Get the leniences
+        var leniences = new Beatmap.NoteLeniences();
+
+        // Remap based on leniences and return
+        if (inFrac != -1)
+        {
+            inFrac = Utils.SetLenience(leniences.lenienceIn, inFrac);
+            return inFrac;
+        }
+        else
+        {
+            outFrac = Utils.SetLenience(leniences.lenienceOut, 1 - outFrac);
+            return outFrac;
+        }
     }
 }

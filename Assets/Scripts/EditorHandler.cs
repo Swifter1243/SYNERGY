@@ -163,7 +163,7 @@ public class EditorHandler : MonoBehaviour
 
         // Video
         var videoPath = Utils.GetVideoPath(Beatmap.Active.songPath, info);
-        mapVisuals.LoadVideo(videoPath, info);
+        mapVisuals.LoadVideo(videoPath);
 
         EventTrigger trigger = scrollbar.GetComponent<EventTrigger>();
         EventTrigger.Entry entry = new EventTrigger.Entry();

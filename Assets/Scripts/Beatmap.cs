@@ -115,8 +115,9 @@ public class Beatmap : MonoBehaviour
         public static VideoPlayer video;
         public static Info info;
         public static Texture2D coverArt;
-        public static float spawnIn = 5;
-        public static float spawnOut = 1;
+        public static float spawnInSeconds = 2;
+        public static float hittableSeconds = 0.2f;
+        public static float spawnOutSeconds = 0.5f;
     }
 
     public static Color PrimaryColor = new Color(45.9f / 100, 78.8f / 100, 86.3f / 100);
@@ -126,8 +127,37 @@ public class Beatmap : MonoBehaviour
 
     public static class NoteScore
     {
+        // Score for hitting a note.
         public static float hit = 20;
+        // Score for hitting straight through the center.
         public static float center = 40;
+        // Score for hitting straight through an axis.
         public static float axis = 70;
+
+        // If note has no axis, hit and center scores are multiplied to maximize to the same as hit + center + axis.
+
+        // Window of seconds on note time that would allow for full score.
+        // Otherwise, score is deducted depending on distance to correct timing.
+        public static float timingLenienceSeconds = 0.07f;
+
+        // The higher percent of the full range of center scores that would count for full points.
+        // So 5% center lenience would mean that cutting with 95% accuracy is rounded to 100%.
+        public static float centerLenience = 0.08f;
+
+        // The higher percent of the full range of axis scores that would count for full points.
+        // So 5% axis lenience would mean that cutting within a 5% degree of the axis gives full points.
+        public static float angleLenience = 0.08f;
+    }
+
+    public class NoteLeniences {
+        public float lenienceIn;
+        public float lenienceOut;
+
+        public NoteLeniences() {
+            lenienceIn = Active.spawnInSeconds - NoteScore.timingLenienceSeconds / 2;
+            lenienceIn /= Active.spawnInSeconds;
+            lenienceOut = Active.spawnOutSeconds - NoteScore.timingLenienceSeconds / 2;
+            lenienceOut /= Active.spawnOutSeconds;
+        }
     }
 }
