@@ -18,8 +18,7 @@ public class SongHandler : MonoBehaviour
 
     public static string songsFolder
     {
-        // get => Application.dataPath + "/Levels"; // TODO: REINSTATE
-        get => "E:/Users/Unity/SYNERGY/Levels";
+        get => Utils.useEditorDirectory ? "E:/Users/Unity/SYNERGY/Levels" : Application.dataPath + "/Levels";
     }
 
     // Start is called before the first frame update

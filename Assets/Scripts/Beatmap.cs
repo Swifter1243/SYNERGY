@@ -115,7 +115,7 @@ public class Beatmap : MonoBehaviour
         public static VideoPlayer video;
         public static Info info;
         public static Texture2D coverArt;
-        public static float spawnInSeconds = 2;
+        public static float spawnInSeconds = 1.1f;
         public static float hittableSeconds = 0.2f;
         public static float spawnOutSeconds = 0.5f;
     }

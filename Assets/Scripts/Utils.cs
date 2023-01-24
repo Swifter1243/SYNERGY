@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class Utils : MonoBehaviour
 {
+    public static bool useEditorDirectory = true;
     public static float BeatToSeconds(float beat, float bpm) => beat / bpm * 60;
     public static float SecondsToBeat(float seconds, float bpm) => seconds * bpm / 60;
     public static float GetSongBeats(float songSeconds, float bpm) => Mathf.Ceil(SecondsToBeat(songSeconds, bpm));

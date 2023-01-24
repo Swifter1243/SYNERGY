@@ -94,7 +94,7 @@ public class DisplayedObject : MonoBehaviour
         if (isNote)
         {
             var image = GetComponent<RawImage>();
-            var timingDist = 50;
+            var timingDist = 80;
 
             image.raycastTarget = IsSelectable(beat);
 
@@ -102,13 +102,12 @@ public class DisplayedObject : MonoBehaviour
             {
                 if (spawnInFrac != -1)
                 {
-                    var newFrac = Utils.EaseInExpo(spawnInFrac);
-                    image.color = Utils.ChangeAlpha(image.color, newFrac);
+                    image.color = Utils.ChangeAlpha(image.color, spawnInFrac);
 
-                    timingSide1.color = Utils.ChangeAlpha(timingSide1.color, newFrac);
-                    timingSide2.color = Utils.ChangeAlpha(timingSide2.color, newFrac);
+                    timingSide1.color = Utils.ChangeAlpha(timingSide1.color, spawnInFrac);
+                    timingSide2.color = Utils.ChangeAlpha(timingSide2.color, spawnInFrac);
 
-                    var timing = Utils.EaseOutExpo((1 - spawnInFrac));
+                    var timing = 1 - spawnInFrac;
                     if ((referenceObj as Beatmap.Note).axis)
                     {
                         var dist = timing * timingDist;
@@ -117,7 +116,7 @@ public class DisplayedObject : MonoBehaviour
                     }
                     else
                     {
-                        var scale = 1 + timing * 0.7f;
+                        var scale = 1 + timing * 0.8f;
                         timingSide1.transform.localPosition = new Vector3(0, 0, 0);
                         timingSide2.transform.localPosition = new Vector3(0, 0, 0);
                         timingSide1.transform.localScale = new Vector3(scale, scale, scale);
@@ -126,7 +125,7 @@ public class DisplayedObject : MonoBehaviour
                 }
                 else
                 {
-                    var newFrac = Utils.EaseOutExpo(1 - spawnOutFrac);
+                    var newFrac = 1 - spawnOutFrac;
                     image.color = Utils.ChangeAlpha(image.color, newFrac);
 
                     var fadeOutFrac = Mathf.Max(1 - spawnOutFrac * 5, 0);

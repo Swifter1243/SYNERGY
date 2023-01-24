@@ -14,7 +14,11 @@ public class Settings : MonoBehaviour
     }
 
     // Values
-    public static float masterVolume;
+    static float rawMasterVolume;
+    static float volumeReduction = 0.4f;
+    public static float masterVolume {
+        get => rawMasterVolume * volumeReduction;
+    }
     public static DisplayMode display;
     public static bool noFail;
     public static bool hideUI;
@@ -36,7 +40,7 @@ public class Settings : MonoBehaviour
             initialized = true;
             initResolution = new Vector2(Display.main.systemWidth, Display.main.systemHeight);
 
-            masterVolume = Utils.InitPlayerPrefsFloat("masterVolume", 1);
+            rawMasterVolume = Utils.InitPlayerPrefsFloat("masterVolume", 1);
             display = (DisplayMode)Utils.InitPlayerPrefsInt("display", (int)DisplayMode.Fullscreen);
             noFail = Utils.InitPlayerPrefsInt("noFail", 0) == 1;
             hideUI = Utils.InitPlayerPrefsInt("hideUI", 0) == 1;
@@ -44,7 +48,7 @@ public class Settings : MonoBehaviour
 
         if (Screen.fullScreenMode == FullScreenMode.FullScreenWindow) windowedResolution = new Vector2(Screen.width, Screen.height);
 
-        masterVolumeObj.value = masterVolume;
+        masterVolumeObj.value = rawMasterVolume;
         displayObj.value = (int)display;
         noFailObj.isOn = noFail;
         hideUIObj.isOn = hideUI;
@@ -57,11 +61,11 @@ public class Settings : MonoBehaviour
 
     public void UpdateMasterVolume()
     {
-        masterVolume = masterVolumeObj.value;
-        masterVolumeText.text = "Master Volume: " + Mathf.Round(masterVolume * 100) + "%";
+        rawMasterVolume = masterVolumeObj.value;
+        masterVolumeText.text = "Master Volume: " + Mathf.Round(rawMasterVolume * 100) + "%";
     }
 
-    public void SaveMasterVolume() => PlayerPrefs.SetFloat("masterVolume", masterVolume);
+    public void SaveMasterVolume() => PlayerPrefs.SetFloat("masterVolume", rawMasterVolume);
 
     public void UpdateDisplay()
     {
