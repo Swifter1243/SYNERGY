@@ -15,7 +15,7 @@ public class Settings : MonoBehaviour
 
     // Values
     static float rawMasterVolume;
-    static float volumeReduction = 0.4f;
+    static float volumeReduction = 0.17f;
     public static float masterVolume {
         get => rawMasterVolume * volumeReduction;
     }
