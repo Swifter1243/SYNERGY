@@ -21,7 +21,7 @@ public class SongSelection : MonoBehaviour
     public AudioSource audioSource;
     public static int audioIndex = 0;
     public static float audioPreview = 0;
-    float audioPreviewLength = 5;
+    float audioPreviewLength = 8;
 
     void Start()
     {
@@ -136,7 +136,7 @@ public class SongSelection : MonoBehaviour
                 if (audioPreview == 0) {
                     audioSource.clip = clip;
                     audioSource.Play();
-                    audioSource.time = clip.length / 3;
+                    audioSource.time = clip.length / 4;
                     audioPreview = 0;
                 }
                 audioPreview += Time.deltaTime;
