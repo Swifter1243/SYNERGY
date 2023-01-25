@@ -143,7 +143,7 @@ public class MapVisuals : MonoBehaviour
         var seconds = Utils.BeatToSeconds(videoBeat, info.BPM);
         var isOn = videoBeat >= 0;
         videoTexture.color = Utils.ChangeAlpha(videoTexture.color, isOn ? 1 : 0);
-        videoPlayer.time = seconds;
+        if (videoPlayer.isPaused) videoPlayer.time = seconds;
 
         if (videoPlayer.isPlaying && (!isOn || !playing)) videoPlayer.Pause();
         if (!videoPlayer.isPlaying && playing && isOn) videoPlayer.Play();
