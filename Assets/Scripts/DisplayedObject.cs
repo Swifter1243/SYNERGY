@@ -107,16 +107,19 @@ public class DisplayedObject : MonoBehaviour
                     timingSide1.color = Utils.ChangeAlpha(timingSide1.color, spawnInFrac);
                     timingSide2.color = Utils.ChangeAlpha(timingSide2.color, spawnInFrac);
 
+                    var easeMotion = Utils.EaseInExpo((1 - spawnInFrac)) * 0.2f;
+
                     var timing = 1 - spawnInFrac;
                     if ((referenceObj as Beatmap.Note).axis)
                     {
-                        var dist = timing * timingDist;
+                        var dist = timing * timingDist + easeMotion * 50;
                         timingSide1.transform.localPosition = new Vector3(-dist, 0, 0);
                         timingSide2.transform.localPosition = new Vector3(dist, 0, 0);
                     }
                     else
                     {
-                        var scale = 1 + timing * 0.8f;
+                        var scale = 1 + timing * 0.9f;
+                        scale = scale + easeMotion;
                         timingSide1.transform.localPosition = new Vector3(0, 0, 0);
                         timingSide2.transform.localPosition = new Vector3(0, 0, 0);
                         timingSide1.transform.localScale = new Vector3(scale, scale, scale);
@@ -125,7 +128,7 @@ public class DisplayedObject : MonoBehaviour
                 }
                 else
                 {
-                    var newFrac = 1 - spawnOutFrac;
+                    var newFrac = Utils.EaseInExpo(1 - spawnOutFrac);
                     image.color = Utils.ChangeAlpha(image.color, newFrac);
 
                     var fadeOutFrac = Mathf.Max(1 - spawnOutFrac * 5, 0);
