@@ -145,7 +145,7 @@ public class MapVisuals : MonoBehaviour
         videoTexture.color = Utils.ChangeAlpha(videoTexture.color, isOn ? 1 : 0);
         videoPlayer.time = seconds;
 
-        if (videoPlayer.isPlaying && !isOn) videoPlayer.Pause();
+        if (videoPlayer.isPlaying && (!isOn || !playing)) videoPlayer.Pause();
         if (!videoPlayer.isPlaying && playing && isOn) videoPlayer.Play();
     }
 
@@ -153,7 +153,7 @@ public class MapVisuals : MonoBehaviour
     {
         if (videoPlayer == null) return;
         playing = play;
-        if (playing == false) videoPlayer.Pause();
+        UpdateVideo();
     }
 
     public void AnimateObjects()
