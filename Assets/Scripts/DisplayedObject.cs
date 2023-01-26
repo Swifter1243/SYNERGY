@@ -94,7 +94,8 @@ public class DisplayedObject : MonoBehaviour
         if (isNote)
         {
             var image = GetComponent<RawImage>();
-            var timingDist = 80;
+            var timingDist = 100;
+            var timingScale = 1.2f;
 
             image.raycastTarget = IsSelectable(beat);
 
@@ -118,7 +119,7 @@ public class DisplayedObject : MonoBehaviour
                     }
                     else
                     {
-                        var scale = 1 + timing * 0.9f;
+                        var scale = 1 + timing * timingScale;
                         scale = scale + easeMotion;
                         timingSide1.transform.localPosition = new Vector3(0, 0, 0);
                         timingSide2.transform.localPosition = new Vector3(0, 0, 0);
