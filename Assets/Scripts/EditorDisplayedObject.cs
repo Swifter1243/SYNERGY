@@ -51,7 +51,7 @@ public class EditorDisplayedObject : MonoBehaviour, IPointerDownHandler
                 TransformGizmo.clickedSelf = true;
                 TransformGizmo.Select(this.gameObject);
             }
-            else if (EditorHandler.editorMode == EditorHandler.EditorMode.DELETE) EditorHandler.Delete(referenceObj);
+            else if (EditorHandler.editorMode == EditorHandler.EditorMode.DELETE) EditorHandler.DeleteObject(referenceObj);
         }
     }
 

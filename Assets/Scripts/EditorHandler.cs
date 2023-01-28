@@ -59,22 +59,38 @@ public class EditorHandler : MonoBehaviour
     bool playing = false;
     /// <summary> The audio player for the song. </summary>
     public static AudioSource audioSource;
+    /// <summary> The text that displays the current time in the difficulty. </summary>
     public Text timeText;
+    /// <summary> The scrollbar for the grid. </summary>
     public Scrollbar scrollbar;
+    /// <summary> The text for the precision denominator. </summary>
     public InputField precision1;
+    /// <summary> The text for the precision numerator. </summary>
     public Text precision2;
+    /// <summary> The minimum precision denominator value. </summary>
     float precisionMin = 1;
+    /// <summary> The maximum precision denominator value. </summary>
     float precisionMax = 64;
+    /// <summary> If set true, grid is refreshed the next frame and this is set to false. </summary>
     public static bool refreshGrid = false;
+    /// <summary> Icon showing the editor is in delete mode. </summary>
     public GameObject deleteOnIcon;
+    /// <summary> Icon showing the editor is in transform mode. </summary>
     public GameObject transformOnIcon;
+    /// <summary> Icon showing the editor is in note mode. </summary>
     public GameObject noteOnIcon;
+    /// <summary> Icon showing the editor is in swap mode. </summary>
     public GameObject swapOnIcon;
+    /// <summary> Text to display status messages in the editor. </summary>
     public Text statusText;
+    /// <summary> All objects that have been copy selected. </summary>
     public static List<Beatmap.GameplayObject> copySelected = new List<Beatmap.GameplayObject>();
+    /// <summary> All objects on the copy clipboard. </summary>
     List<Beatmap.GameplayObject> clipboard = new List<Beatmap.GameplayObject>();
+    /// <summary> Parent object for everything relating to the grid. </summary>
     public GameObject grid;
 
+    /// <summary> All modes the editor can be in. </summary>
     public enum EditorMode
     {
         DELETE,
@@ -83,10 +99,15 @@ public class EditorHandler : MonoBehaviour
         SWAP
     }
 
+    /// <summary> Current mode of the editor. </summary>
     public static EditorMode editorMode = EditorMode.TRANSFORM;
+    /// <summary> Whether notes will be placed with an axis. </summary>
     public static bool axisMode = false;
+    /// <summary> Whether placed notes are primary. </summary>
     public static bool primaryMode = true;
 
+    /// <summary> Set the mode of the editor. </summary>
+    /// <param name="mode"> The mode to set to. </param>
     public void SetMode(EditorMode mode)
     {
         if (mode != editorMode)
@@ -106,11 +127,15 @@ public class EditorHandler : MonoBehaviour
         if (mode != EditorMode.TRANSFORM) TransformGizmo.Deselect();
     }
 
+    /// <summary> The icon for the note mode button. </summary>
     public RawImage noteButtonIcon;
+    /// <summary> Icon showing the editor will place notes with an axis. </summary>
     public GameObject axisOnIcon;
+    /// <summary> Icon showing whether the editor will place notes as primary or secondary notes. </summary>
     public Image primaryIcon;
 
-    void UpdateNoteButton()
+    /// <summary> Updates the visuals of the buttons that are relevant to notes in the editor. </summary>
+    void UpdateNoteButtons()
     {
         var note = new Beatmap.Note();
         note.axis = axisMode;
@@ -121,25 +146,32 @@ public class EditorHandler : MonoBehaviour
         else primaryIcon.color = Beatmap.SecondaryColor;
     }
 
+    /// <summary> Toggles axis mode. </summary>
     public void ToggleAxisMode()
     {
         axisMode = !axisMode;
-        UpdateNoteButton();
+        UpdateNoteButtons();
     }
 
+    /// <summary> Toggles primary mode. </summary>
     public void TogglePrimaryMode()
     {
         primaryMode = !primaryMode;
-        UpdateNoteButton();
+        UpdateNoteButtons();
     }
 
+    /// <summary> Sets the editor into delete mode. </summary>
     public void ModeDelete() => SetMode(EditorMode.DELETE);
+    /// <summary> Sets the editor into transform mode. </summary>
     public void ModeTransform() => SetMode(EditorMode.TRANSFORM);
+    /// <summary> Sets the editor into note mode. </summary>
     public void ModeNote() => SetMode(EditorMode.NOTE);
+    /// <summary> Sets the editor into swap mode. </summary>
     public void ModeSwap() => SetMode(EditorMode.SWAP);
 
     void Start()
     {
+        // This is something to initialize the editor scene if I jump straight into it from the unity editor.
         if (Beatmap.Active.diffName == null)
         {
             var songPath = new DirectoryInfo(SongHandler.songsFolder).GetDirectories()[0].ToString();
@@ -154,6 +186,7 @@ public class EditorHandler : MonoBehaviour
             Beatmap.Active.info = songInfo;
         }
 
+        // Settings player preferences
         scrollPrecision = 1 / Utils.InitPlayerPrefsFloat("precision1", 2);
         precision1.text = PlayerPrefs.GetFloat("precision1").ToString();
         precision2.text = Utils.InitPlayerPrefsFloat("precision2", 8).ToString();
@@ -161,6 +194,7 @@ public class EditorHandler : MonoBehaviour
         primaryMode = Utils.InitPlayerPrefsInt("primaryMode", 1) == 1;
         axisMode = Utils.InitPlayerPrefsInt("axisMode", 0) == 1;
 
+        // If the difficulty is null, it is loaded.
         if (diff == null)
         {
             var rawData = File.ReadAllText(Beatmap.Active.diffPath);
@@ -170,6 +204,7 @@ public class EditorHandler : MonoBehaviour
             diff.bpmChanges.Sort((a, b) => ((int)a.time) - ((int)b.time));
         }
 
+        // Variable initialization
         mapVisuals = mapVisualRef;
         mapVisuals.diff = diff;
         info = Beatmap.Active.info;
@@ -188,17 +223,21 @@ public class EditorHandler : MonoBehaviour
         var videoPath = Utils.GetVideoPath(Beatmap.Active.songPath, info);
         mapVisuals.LoadVideo(videoPath);
 
+        // Initializing scrollbar
         EventTrigger trigger = scrollbar.GetComponent<EventTrigger>();
         EventTrigger.Entry entry = new EventTrigger.Entry();
         entry.eventID = EventTriggerType.Drag;
         entry.callback.AddListener((data) => { Scroll(); });
         trigger.triggers.Add(entry);
 
+        // Initializing visuals
         UpdateVisualsTransform();
-        UpdateNoteButton();
+        UpdateNoteButtons();
         mapVisuals.UpdateBeat(scrollBeat);
     }
 
+    /// <summary> Saves the difficulty. </summary>
+    /// <param name="showMessage"> Whether a status message for the save should be displayed. </param>
     public void Save(bool showMessage = true)
     {
         PlayerPrefs.SetFloat("precision1", float.Parse(precision1.text));
@@ -210,6 +249,7 @@ public class EditorHandler : MonoBehaviour
         if (showMessage) StatusMessage("Map Saved!");
     }
 
+    /// <summary> Exit the editor. </summary>
     public void Exit()
     {
         Save(false);
@@ -217,6 +257,7 @@ public class EditorHandler : MonoBehaviour
         Transition.Load("EditorSongs");
     }
 
+    /// <summary> Plays the difficulty. </summary>
     public void Play()
     {
         Save(false);
@@ -228,6 +269,8 @@ public class EditorHandler : MonoBehaviour
         Transition.Load("Playing");
     }
 
+    /// <summary> Shows a status mesage in the editor. </summary>
+    /// <param name="message"> The message to display. </param>
     public void StatusMessage(string message)
     {
         statusText.text = message;
@@ -236,6 +279,8 @@ public class EditorHandler : MonoBehaviour
         statusText.color = errorColor;
     }
 
+    /// <summary> Loads and initializes the audio. </summary>
+    /// <param name="path"> The path of the audio. </param>
     public IEnumerator LoadAudio(string path)
     {
         var www = UnityWebRequestMultimedia.GetAudioClip($"file:///{Uri.EscapeDataString($"{path}")}", AudioType.OGGVORBIS);
@@ -245,6 +290,8 @@ public class EditorHandler : MonoBehaviour
         SetAudio(clip);
     }
 
+    /// <summary> Sets the audio of the editor. </summary>
+    /// <param name="clip"> The clip to set the audio to. </param>
     void SetAudio(AudioClip clip)
     {
         audioSource.clip = clip;
@@ -252,6 +299,8 @@ public class EditorHandler : MonoBehaviour
         DrawGrid();
     }
 
+    /// <summary> Toggle the primary value on a note and update the visuals accordingly. </summary>
+    /// <param name="note"> The note to update. </param>
     void ToggleNotePrimary(Beatmap.Note note)
     {
         note.primary = !note.primary;
@@ -259,6 +308,8 @@ public class EditorHandler : MonoBehaviour
         transformGizmo.RedrawVisuals();
     }
 
+    /// <summary> Toggle the axis value on a note and update the visuals accordingly. </summary>
+    /// <param name="note"> The note to update. </param>
     void ToggleNoteAxis(Beatmap.Note note)
     {
         note.axis = !note.axis;
@@ -383,6 +434,7 @@ public class EditorHandler : MonoBehaviour
             }
         }
 
+        // Watching changing variables
         WatchVariables();
 
         // Run Transform Gizmo
@@ -458,6 +510,7 @@ public class EditorHandler : MonoBehaviour
         }
     }
 
+    /// <summary> Toggle the pause or playing of the song. </summary>
     void ToggleSong()
     {
         playing = !playing;
@@ -478,6 +531,8 @@ public class EditorHandler : MonoBehaviour
         }
     }
 
+    /// <summary> Push an object to the difficulty and update visuals. </summary>
+    /// <param name="obj"> Object to push. </param>
     void PushGameplayObject(Beatmap.GameplayObject obj)
     {
         if (obj is Beatmap.Note)
@@ -493,33 +548,8 @@ public class EditorHandler : MonoBehaviour
         DrawGrid();
     }
 
-    public static void Delete(Beatmap.GameplayObject obj, bool makeAction = true)
-    {
-        if (makeAction)
-        {
-            var action = new DeleteAction();
-            action.obj = obj;
-            AddAction(action);
-        }
-
-        RemoveObject(obj);
-
-        if (mapVisuals.onScreenObjs.ContainsKey(obj))
-        {
-            var onScreenObj = mapVisuals.onScreenObjs[obj];
-            if (TransformGizmo.selectedObj == onScreenObj)
-            {
-                TransformGizmo.selectedObj = null;
-                TransformGizmo.referenceObj = null;
-            }
-            Destroy(onScreenObj);
-            mapVisuals.onScreenObjs.Remove(obj);
-            mapVisuals.UpdateBeat(scrollBeat);
-        }
-
-        refreshGrid = true;
-    }
-
+    /// <summary> Get the corresponding Y value for a point on the grid based on a beat. </summary>
+    /// <param name="beat"> Beat of the point. </param>
     public float GetGridY(float beat)
     {
         beat -= scrollBeat;
@@ -530,8 +560,11 @@ public class EditorHandler : MonoBehaviour
         return y;
     }
 
+    /// <summary> Check if a y value of a point is visible on the grid. </summary>
+    /// <param name="gridY"> The y value on the grid. </param>
     public bool IsOnGrid(float gridY) => gridY > -Screen.height * despawnDist & gridY < Screen.height * (1 + despawnDist);
 
+    /// <summary> Called after scroll wheel is scrolled to update the editor accordingly. </summary>
     public void Scroll()
     {
         scrollBeat = songBeats * scrollbar.value;
@@ -539,26 +572,35 @@ public class EditorHandler : MonoBehaviour
         mapVisuals.UpdateBeat(scrollBeat);
     }
 
+    /// <summary> Snap the scroll value to the current precision. </summary>
     void NormalizeScroll() => scrollBeat = Mathf.Round(scrollBeat / scrollPrecision) * scrollPrecision;
 
+    /// <summary> Called after editor scale slider value changes to update grid accordingly. </summary>
     public void SlideEditorScale() => editorScale = editorScaleSlider.value;
 
+    /// <summary> Material for the shader that displays grid lines. </summary>
     public Material gridLines;
 
+    /// <summary> Refresh and redraw the entire grid. </summary>
     public void DrawGrid()
     {
+        // Update scrollbar position
         scrollbar.value = scrollBeat / songBeats;
 
+        // Update time text
         var seconds = Utils.BeatToSeconds(scrollBeat, info.BPM);
         var time = TimeSpan.FromSeconds(seconds);
         timeText.text = time.ToString(@"m\:ss\.ff");
 
+        // Clear grid elements
         gridElements.ForEach(x => { Destroy(x); });
         gridElements.Clear();
 
+        // Update visuals and grid shader
         UpdateVisualsTransform();
-        RefreshGridLines();
+        RefreshGridShader();
 
+        // Spawn beat guides
         var width = Screen.width * gridWidth;
 
         for (var i = 0; i <= songBeats; i++)
@@ -574,6 +616,7 @@ public class EditorHandler : MonoBehaviour
             gridElements.Add(bg);
         }
 
+        // Add new grid elements
         Dictionary<float, List<Beatmap.GameplayObject>> displayedObjects = new Dictionary<float, List<Beatmap.GameplayObject>>();
 
         void DisplayGameplayObject(Beatmap.GameplayObject obj)
@@ -621,7 +664,8 @@ public class EditorHandler : MonoBehaviour
         }
     }
 
-    void RefreshGridLines()
+    /// <summary> Refresh the grid lines shader. </summary>
+    void RefreshGridShader()
     {
         float spacing = scrollPrecision * beatScale;
         spacing /= editorScale;
@@ -633,25 +677,41 @@ public class EditorHandler : MonoBehaviour
         gridLines.SetFloat("_Top", top);
     }
 
-    public static float screenHeight;
+    /// <summary> The height of the screen canvas. </summary>
+    public static float canvasHeight;
+    /// <summary> The height of the screen canvas in relation to the screen height. </summary>
     public static float heightScalar;
+    /// <summary> The width of the screen canvas in relation to the screen width. </summary>
     public static float widthScalar;
+    /// <summary> Width of the map visuals. </summary>
     public static float visualWidth;
+    /// <summary> Height of the map visuals. </summary>
     public static float visualHeight;
+    /// <summary> Rightmost bound of the map visuals. The visuals go from the left of the screen until this point. </summary>
     public static float visualBoundX;
+    /// <summary> Lower bound of the map visuals. The visuals go from the top of the screen until this point. </summary>
     public static float visualBoundY;
 
+    /// <summary> Determines if a point on the screen is inside of the map visuals. </summary>
+    /// <param name="point"> The point on the screen. </param>
     public static bool IsInVisual(Vector2 point) => point.x > 0 && point.x < visualBoundX && point.y < Screen.height && point.y > visualBoundY;
+
+    /// <summary> Converts a point on the screen to a point on the map visuals. </summary>
+    /// <param name="point"> The point on the screen. </param>
     public static Vector2 ScreenToVisual(Vector2 point) => new Vector2(
         point.x * (visualBoundX / Screen.width),
         point.y * ((Screen.height - visualBoundY) / Screen.height) + visualBoundY
     );
 
+    /// <summary> Converts a point on the map visuals to a point on the screen. </summary>
+    /// <param name="point"> The point on the map visuals. </param>
     public static Vector2 VisualToScreen(Vector2 point) => new Vector2(
         point.x / (visualBoundX / Screen.width),
         (point.y - visualBoundY) / ((Screen.height - visualBoundY) / Screen.height)
     );
 
+    /// <summary> Moves the editor timeline to an object, selecting it with the transform gizmo if possible. </summary>
+    /// <param name="obj"> The object to focus. </param>
     void FocusObject(Beatmap.GameplayObject obj)
     {
         TransformGizmo.Deselect();
@@ -661,6 +721,7 @@ public class EditorHandler : MonoBehaviour
         TransformGizmo.Select(mapVisuals.onScreenObjs[obj]);
     }
 
+    /// <summary> Check for changes in watched variables to refresh the grid. </summary>
     void WatchVariables()
     {
         watcher.Watch(scrollBeat);
@@ -683,6 +744,7 @@ public class EditorHandler : MonoBehaviour
         refreshGrid = false;
     }
 
+    /// <summary> Update the map visuals transform. </summary>
     void UpdateVisualsTransform()
     {
         visualWidth = 1 - gridWidth;
@@ -697,12 +759,12 @@ public class EditorHandler : MonoBehaviour
 
         var canvasRect = this.GetComponent<RectTransform>();
 
-        screenHeight = canvasRect.sizeDelta.y;
-        heightScalar = Screen.height / screenHeight;
+        canvasHeight = canvasRect.sizeDelta.y;
+        heightScalar = Screen.height / canvasHeight;
         widthScalar = Screen.width / canvasRect.sizeDelta.x;
 
         visualBoundX = Screen.width * visualWidth;
-        visualBoundY = screenHeight - mapVisuals.GetBounds().height;
+        visualBoundY = canvasHeight - mapVisuals.GetBounds().height;
         visualBoundY *= heightScalar;
 
         rect.transform.position = new Vector2(
@@ -711,6 +773,7 @@ public class EditorHandler : MonoBehaviour
         );
     }
 
+    /// <summary> Called when the precision denominator input field is changed and updates the editor accordingly. </summary>
     public void UpdatePrecision()
     {
         var value = float.Parse(precision1.text);
@@ -727,62 +790,98 @@ public class EditorHandler : MonoBehaviour
         }
 
         scrollPrecision = 1 / float.Parse(precision1.text);
-        RefreshGridLines();
+        RefreshGridShader();
     }
 
+    /// <summary> Checks if a beatmap object is a note. </summary>
+    /// <param name="obj"> The object to check. </param>
     public static bool isNote(Beatmap.GameplayObject obj) => obj is Beatmap.Note;
+
+    /// <summary> Checks if a beatmap object is a swap. </summary>
+    /// <param name="obj"> The object to check. </param>
     public static bool isSwap(Beatmap.GameplayObject obj) => obj is Beatmap.Swap;
 
+    /// <summary> An action to register into the undo and redo system. </summary>
     public class EditorAction
     {
+        /// <summary> The object relevant to this action. </summary>
         public Beatmap.GameplayObject obj;
     }
 
+    /// <summary> An action where an object is deleted. </summary>
     public class DeleteAction : EditorAction { }
+    /// <summary> An action where an object is placed </summary>
     public class PlaceAction : EditorAction { }
+    /// <summary> An action where a note's primary value is toggled </summary>
     public class PrimaryAction : EditorAction { }
+    /// <summary> An action where a note's axis value is toggled </summary>
     public class AxisAction : EditorAction { }
+    /// <summary> An action where an object's time is changed </summary>
     public class TimeAction : EditorAction
     {
+        /// <summary> The time before the action. </summary>
         public float startTime;
+        /// <summary> The time after the action. </summary>
         public float endTime;
     }
+    /// <summary> An action where a note is moved. </summary>
     public class TranslateNoteAction : EditorAction
     {
+        /// <summary> The position before the action. </summary>
         public Vector2 startPos;
+        /// <summary> The position after the action. </summary>
         public Vector2 endPos;
     }
+    /// <summary> An action where a note is rotated. </summary>
     public class RotateNoteAction : EditorAction
     {
+        /// <summary> The angle before the action. </summary>
         public float startAngle;
+        /// <summary> An angle after the action. </summary>
         public float endAngle;
     }
+    /// <summary> An action where a swap's axis is changed. </summary>
     public class MoveSwapAction : EditorAction
     {
+        /// <summary> Whether the axis was vertical before the action. </summary>
         public bool startVertical;
+        /// <summary> Whether the axis is vertical after the action. </summary>
         public bool endVertical;
     }
+    /// <summary> An action where a bunch of objects are pasted. </summary>
     public class PasteAction : EditorAction
     {
+        /// <summary> The pasted objects. </summary>
         public List<Beatmap.GameplayObject> objs;
     }
 
+    /// <summary> A list of actions in the editor. </summary>
     public static List<EditorAction> actions = new List<EditorAction>();
+    /// <summary> A list of undone actions that can be redone. </summary>
     public static List<EditorAction> undos = new List<EditorAction>();
+    /// <summary> The maximum amount of actions allowed to be stored in the editor. </summary>
+    static float actionLimit = 100;
 
+    /// <summary> Register an action in the editor. </summary>
+    /// <param name="action"> The action to register. </param>
+    /// <param name="newPath"> Whether this action changes the undo timeline, meaning undone actions will be cleared. </param>
     public static void AddAction(EditorAction action, bool newPath = true)
     {
         actions.Add(action);
-        if (actions.Count > 100) actions.RemoveAt(0);
+        if (actions.Count > actionLimit) actions.RemoveAt(0);
         if (newPath) undos.Clear();
     }
 
+    /// <summary> Register an undone action in the editor. </summary>
+    /// <param name="action"> The action to register. </param>
     public static void AddUndo(EditorAction action)
     {
         undos.Add(action);
-        if (undos.Count > 100) undos.RemoveAt(0);
+        if (undos.Count > actionLimit) undos.RemoveAt(0);
     }
 
+    /// <summary> Focus the editor on a particular action. </summary>
+    /// <param name="action"> The action to focus. </param>
     public void FocusAction(EditorAction action)
     {
         if (!mapVisuals.onScreenObjs.ContainsKey(action.obj))
@@ -798,11 +897,12 @@ public class EditorHandler : MonoBehaviour
         var action = actions[actions.Count - 1];
         actions.Remove(action);
         AddUndo(action);
+
         if (!(action is TimeAction)) FocusAction(action);
 
         if (action is DeleteAction) AddObject(action.obj, false); // TODO: Test this "false" lol
 
-        if (action is PlaceAction) Delete(action.obj, false);
+        if (action is PlaceAction) DeleteObject(action.obj, false);
 
         if (action is PrimaryAction) ToggleNotePrimary(action.obj as Beatmap.Note);
 
@@ -853,7 +953,7 @@ public class EditorHandler : MonoBehaviour
         undos.Remove(action);
         if (!(action is TimeAction)) FocusAction(action);
 
-        if (action is DeleteAction) Delete(action.obj, false);
+        if (action is DeleteAction) DeleteObject(action.obj, false);
 
         if (action is PlaceAction)
         {
@@ -916,23 +1016,30 @@ public class EditorHandler : MonoBehaviour
         }
     }
 
+    /// <summary> Push an object to the difficulty class. Doesn't update visuals. </summary>
+    /// <param name="obj"> Object to push. </param>
     public static void PushObject(Beatmap.GameplayObject obj)
     {
         if (obj is Beatmap.Note note) diff.notes.Add(note);
         if (obj is Beatmap.Swap swap) diff.swaps.Add(swap);
     }
 
+    /// <summary> Remove an object from the difficulty class. Doesn't update visuals. </summary>
+    /// <param name="obj"> Object to remove. </param>
     public static void RemoveObject(Beatmap.GameplayObject obj)
     {
         if (isNote(obj)) mapVisuals.diff.notes.Remove(obj as Beatmap.Note);
         if (isSwap(obj)) mapVisuals.diff.swaps.Remove(obj as Beatmap.Swap);
     }
 
-    public void AddObject(Beatmap.GameplayObject obj, bool action = false)
+    /// <summary> Add an object to the difficulty and update visuals. </summary>
+    /// <param name="obj"> Object to add. </param>
+    /// <param name="makeAction"> Whether to register an add action. </param>
+    public void AddObject(Beatmap.GameplayObject obj, bool makeAction = false)
     {
         PushObject(obj);
 
-        if (action)
+        if (makeAction)
         {
             var placeAction = new PlaceAction();
             placeAction.obj = obj;
@@ -944,10 +1051,45 @@ public class EditorHandler : MonoBehaviour
         if (obj is Beatmap.Note) mapVisuals.NoteGraphic(obj as Beatmap.Note, mapVisuals.onScreenObjs[obj].GetComponent<RawImage>());
     }
 
-    public GameObject helpPanel;
+    /// <summary> Delete an object from the difficulty and update visuals. </summary>
+    /// <param name="obj"> Object to delete. </param>
+    /// <param name="makeAction"> Whether to register a delete action. </param>
+    public static void DeleteObject(Beatmap.GameplayObject obj, bool makeAction = true)
+    {
+        if (makeAction)
+        {
+            var action = new DeleteAction();
+            action.obj = obj;
+            AddAction(action);
+        }
 
+        RemoveObject(obj);
+
+        if (mapVisuals.onScreenObjs.ContainsKey(obj))
+        {
+            var onScreenObj = mapVisuals.onScreenObjs[obj];
+            if (TransformGizmo.selectedObj == onScreenObj)
+            {
+                TransformGizmo.selectedObj = null;
+                TransformGizmo.referenceObj = null;
+            }
+            Destroy(onScreenObj);
+            mapVisuals.onScreenObjs.Remove(obj);
+            mapVisuals.UpdateBeat(scrollBeat);
+        }
+
+        refreshGrid = true;
+    }
+
+    /// <summary> The panel that displays keybinds for the editor. </summary>
+    public GameObject helpPanel;
+    
+    /// <summary> Hide or show the help panel. </summary>
+    /// <param name="show"> Whether to hide or show the help panel. </param>
     public void ShowHelp(bool show) => helpPanel.SetActive(show);
 
+    /// <summary> Clear the copy selected objects in the editor. </summary>
+    /// <param name="message"> Whether to show a status message for the deselected objects. </param>
     public void ClearCopySelected(bool message = true)
     {
         if (message)

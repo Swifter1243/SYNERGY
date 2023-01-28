@@ -8,25 +8,42 @@ using System.IO;
 
 public class MapVisuals : MonoBehaviour
 {
+    /// <summary> The difficulty for the visuals. </summary>
     public Beatmap.Difficulty diff;
+    /// <summary> A shortcut for the info of the active song. </summary>
     Beatmap.Info info { get => Beatmap.Active.info; }
+    /// <summary> The beat these visuals are displaying. </summary>
     public float beat;
+    /// <summary> The object to spawn for notes. </summary>
     public GameObject displayedNote;
+    /// <summary> The object to spawn for swaps. </summary>
     public GameObject displayedSwap;
+    /// <summary> The rect transform of the visuals. </summary>
     public RectTransform rect;
+    /// <summary> The canvas of the scene. </summary>
     public Canvas canvas;
 
+    /// <summary> The displayed objects currently onscreen. </summary>
     public Dictionary<Beatmap.GameplayObject, GameObject> onScreenObjs = new Dictionary<Beatmap.GameplayObject, GameObject>();
 
+    /// <summary> Whether the vertical mirror is enabled at the current beat. </summary>
     public bool verticalMirror = false;
+    /// <summary> Whether the horizontal mirror is enabled at the current beat. </summary>
     public bool horizontalMirror = false;
+    /// <summary> The threshold for animating the mirrors approaching a value where it doesn't animate anymore. </summary>
     float animThreshold = 0.001f;
+    /// <summary> The current cutoff of the vertical mirror. </summary>
     float verticalMirrorAnim = 0;
+    /// <summary> The current cutoff of the horizontal mirror. </summary>
     float horizontalMirrorAnim = 0;
+    /// <summary> The material for the vertical mirror. </summary>
     public Material verticalMirrorMat;
+    /// <summary> The material for the horizontal mirror. </summary>
     public Material horizontalMirrorMat;
+    /// <summary> Whether these visuals are for gameplay. </summary>
     public bool gameplay = true;
 
+    // Initialization.
     void Awake()
     {
         verticalMirrorMat.SetFloat("_Cutoff", 0);
@@ -35,12 +52,16 @@ public class MapVisuals : MonoBehaviour
         canvas = GetComponentInParent<Canvas>();
     }
 
+    /// <summary> Gets the screenspace bounds of the visuals. </summary>
     public Rect GetBounds() => RectTransformUtility.PixelAdjustRect(rect, canvas);
-
+    
+    /// <summary> Updates the visuals to a given beat. </summary>
+    /// <param name="newBeat"> The beat to update to. </param>
     public void UpdateBeat(float newBeat)
     {
         beat = newBeat;
 
+        // Remove old displayed objects
         var removedObjs = new List<Beatmap.GameplayObject>();
 
         foreach (var obj in onScreenObjs)
@@ -54,16 +75,19 @@ public class MapVisuals : MonoBehaviour
 
         removedObjs.ForEach(x => { onScreenObjs.Remove(x); });
 
-        diff.notes.ForEach(x => { checkObjectSpawn(x); });
-        if (!gameplay) diff.swaps.ForEach(x => { checkObjectSpawn(x); });
-
+        // Add new displayed objects
+        diff.notes.ForEach(x => { CheckObjectSpawn(x); });
+        if (!gameplay) diff.swaps.ForEach(x => { CheckObjectSpawn(x); });
         AnimateObjects();
 
+        // Update video
         if (videoPlayer != null && videoPlayer.isPrepared) UpdateVideo();
     }
-
+    
+    /// <summary> Function to run when the state of the mirrors change. </summary>
     public Action onMirrorUpdate;
 
+    /// <summary> Check swaps to see if mirrors need to be updated. </summary>
     public void CheckSwaps()
     {
         var verticalSwaps = diff.swaps.FindAll(x => x.type == Beatmap.SwapType.Vertical && x.time <= beat);
@@ -84,7 +108,7 @@ public class MapVisuals : MonoBehaviour
     {
         CheckSwaps();
 
-        // Vertical Animation
+        // Vertical mirror animation
         if (verticalMirror && verticalMirrorAnim < 1)
         {
             if (1 - verticalMirrorAnim < animThreshold) verticalMirrorAnim = 1;
@@ -98,7 +122,7 @@ public class MapVisuals : MonoBehaviour
             verticalMirrorMat.SetFloat("_Cutoff", verticalMirrorAnim);
         }
 
-        // Horizontal Animation
+        // Horizontal mirror animation
         if (horizontalMirror && horizontalMirrorAnim < 1)
         {
             if (1 - horizontalMirrorAnim < animThreshold) horizontalMirrorAnim = 1;
@@ -113,6 +137,7 @@ public class MapVisuals : MonoBehaviour
         }
     }
 
+    /// <summary> Completely refresh visuals. </summary>
     public void Redraw()
     {
         foreach (var obj in onScreenObjs) Destroy(obj.Value);
@@ -121,11 +146,17 @@ public class MapVisuals : MonoBehaviour
         AnimateObjects();
     }
 
+    /// <summary> The object containing the video player and render texture. </summary>
     public GameObject video;
+    /// <summary> The render texture for the video. </summary>
     public RawImage videoTexture;
+    /// <summary> The video player for the visuals. </summary>
     public VideoPlayer videoPlayer;
+    /// <summary> Whether the video is playing. </summary>
     bool playing = false;
-
+    
+    /// <summary> Load and initialize the video. </summary>
+    /// <param name="path"> Path to the video file. </param>
     public void LoadVideo(string path)
     {
         if (!File.Exists(path)) return;
@@ -137,6 +168,7 @@ public class MapVisuals : MonoBehaviour
         UpdateVideo();
     }
 
+    /// <summary> Update the video frame and visibility. </summary>
     void UpdateVideo()
     {
         var videoBeat = beat - info.videoOffset;
@@ -148,7 +180,9 @@ public class MapVisuals : MonoBehaviour
         if (videoPlayer.isPlaying && (!isOn || !playing)) videoPlayer.Pause();
         if (!videoPlayer.isPlaying && playing && isOn) videoPlayer.Play();
     }
-
+    
+    /// <summary> Pause or play the video. </summary>
+    /// <param name="play"> Whether to pause or play the video. </param>
     public void PlayVideo(bool play)
     {
         if (videoPlayer == null) return;
@@ -156,6 +190,7 @@ public class MapVisuals : MonoBehaviour
         UpdateVideo();
     }
 
+    /// <summary> Animate onscreen objects. </summary>
     public void AnimateObjects()
     {
         foreach (var obj in onScreenObjs.Values)
@@ -165,10 +200,14 @@ public class MapVisuals : MonoBehaviour
         }
     }
 
-    void checkObjectSpawn(Beatmap.GameplayObject obj)
+    /// <summary> Check if an object in a difficulty needs to be spawned onto the visuals. </summary>
+    /// <param name="obj"> Object to check. </param>
+    void CheckObjectSpawn(Beatmap.GameplayObject obj)
     {
+        // Only spawn if object isn't already onscreen.
         if (isOnScreen(obj) && !onScreenObjs.ContainsKey(obj))
         {
+            // Initialize note
             if (EditorHandler.isNote(obj))
             {
                 var displayedObj = Instantiate(displayedNote);
@@ -195,6 +234,7 @@ public class MapVisuals : MonoBehaviour
 
                 NoteGraphic(noteObj, displayedObj.GetComponent<RawImage>());
             }
+            // Initialize swap
             if (EditorHandler.isSwap(obj))
             {
                 var displayedObj = Instantiate(displayedSwap);
@@ -223,6 +263,8 @@ public class MapVisuals : MonoBehaviour
         }
     }
 
+    /// <summary> Transform a point in screenspace to a point on the visuals. </summary>
+    /// <param name="point"> Point to transform. </param>
     public Vector2 ScreenToVisual(Vector2 point)
     {
         var bounds = GetBounds();
@@ -242,6 +284,8 @@ public class MapVisuals : MonoBehaviour
         return new Vector2(x, y);
     }
 
+    /// <summary> Check if an object in the difficulty is onscreen based on it's time. </summary>
+    /// <param name="obj"> Object to check. </param>
     public bool isOnScreen(Beatmap.GameplayObject obj)
     {
         var difference = Utils.BeatToSeconds(obj.time - beat, info.BPM);
@@ -250,14 +294,19 @@ public class MapVisuals : MonoBehaviour
         return true;
     }
 
+    /// <summary> Icon for a regular note. </summary>
     public Texture2D noteIcon;
+    /// <summary> Icon for an axis note. </summary>
     public Texture2D axisNoteIcon;
 
-    public void NoteGraphic(Beatmap.Note note, RawImage graphic)
+    /// <summary> Update an image based on the properties of a note. </summary>
+    /// <param name="note"> The note which contains the properties. </param>
+    /// <param name="image"> The image to update. </param>
+    public void NoteGraphic(Beatmap.Note note, RawImage image)
     {
-        if (note.axis) graphic.texture = axisNoteIcon;
-        else graphic.texture = noteIcon;
-        if (note.primary) graphic.color = Beatmap.PrimaryColor;
-        else graphic.color = Beatmap.SecondaryColor;
+        if (note.axis) image.texture = axisNoteIcon;
+        else image.texture = noteIcon;
+        if (note.primary) image.color = Beatmap.PrimaryColor;
+        else image.color = Beatmap.SecondaryColor;
     }
 }

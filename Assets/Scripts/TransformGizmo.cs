@@ -115,7 +115,7 @@ public class TransformGizmo : MonoBehaviour
         // Deleting With Key
         if (Input.GetKeyDown(KeyCode.Delete))
         {
-            EditorHandler.Delete(referenceObj);
+            EditorHandler.DeleteObject(referenceObj);
             Deselect();
             return;
         }
