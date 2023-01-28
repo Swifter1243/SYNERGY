@@ -8,33 +8,56 @@ using System.IO;
 using UnityEngine.Networking;
 using UnityEngine.EventSystems;
 
+/// <summary> Script for the internals of the editor. </summary>
 public class EditorHandler : MonoBehaviour
 {
+    /// <summary> The current base beat of the editor. </summary>
     public static float scrollBeat = 0;
+    /// <summary> The current scroll precision. </summary>
     [Range(1f / 64f, 1)]
-    public float scrollPrecision = 1f / 2f; // Scroll pecision
+    public float scrollPrecision = 1f / 2f;
+    /// <summary> The current editor scale. </summary>
     [Range(0.2f, 3)]
     public float editorScale = 1;
+    /// <summary> The editor scale slider object. </summary>
     public Slider editorScaleSlider;
-    float songBeats = 100000; // The amount of base beats that the song extends
-    public float beatScale = 1f / 8f; // The width of the screen that each base beat will take up
+    /// <summary> The amount of base beats the song extends. </summary>
+    float songBeats = 100000;
+    /// <summary> The width of the screen that each base beat in the grid will take up, assuming editor scale is 1. </summary>
+    public float beatScale = 1f / 8f;
+    /// <summary> The percentage an object on the grid can go off the screen vertically before it despawns.  </summary>
     public float despawnDist = 0.1f;
-    public float gridWidth = 0.2f; // Percentage of the screen the grid should take up
-    public float iconSize = 0.3f; // Percentage of the grid width that the icons will be scaled to
+    /// <summary> Percentage of the screen the grid should take up. </summary>
+    public float gridWidth = 0.2f;
+    /// <summary> Percentage of the grid width that the icons will be scaled to </summary>
+    public float iconSize = 0.3f;
+    /// <summary> The object to spawn for each beat on the grid. </summary>
     public GameObject beatGuide;
+    /// <summary> All objects that make up the grid. </summary>
     List<GameObject> gridElements = new List<GameObject>();
+    /// <summary> Watches changes in numbers in order to redraw the grid. </summary>
     Utils.NumberWatcher watcher = new Utils.NumberWatcher();
+    /// <summary> Watches changes in screen related numbers to redraw the grid. </summary>
     Utils.NumberWatcher screenWatcher = new Utils.NumberWatcher();
+    /// <summary> Object to display for notes on the grid. </summary>
     public Button noteGridImage;
+    /// <summary> Object to display for swaps on the grid. </summary>
     public Button swapGridImage;
+    /// <summary> Icon for notes. </summary>
     public Texture2D noteIcon;
+    /// <summary> The current active difficulty. </summary>
     public static Beatmap.Difficulty diff;
+    /// <summary> The current active info. </summary>
     Beatmap.Info info;
+    /// <summary> Unity won't let you assign static variables in the editor.. so this is my workaround. </summary>
     public MapVisuals mapVisualRef;
+    /// <summary> The reference to the map visuals for the editor. </summary>
     public static MapVisuals mapVisuals;
-    public static bool avoidDeselect = false;
+    /// <summary> The reference to the transform gizmo script. </summary>
     public TransformGizmo transformGizmo;
+    /// <summary> Whether the song is playing in the editor. </summary>
     bool playing = false;
+    /// <summary> The audio player for the song. </summary>
     public static AudioSource audioSource;
     public Text timeText;
     public Scrollbar scrollbar;

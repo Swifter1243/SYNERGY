@@ -64,12 +64,12 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _LineFrequency: 18.429035
+    - _LineFrequency: 36.85807
     - _LineSize: 0.00373
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
-    - _Offset: 10.581129
+    - _Offset: 41.998943
     - _Parallax: 0.02
     - _Resolution: 2000
     - _SmoothnessTextureChannel: 0

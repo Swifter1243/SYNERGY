@@ -5,33 +5,49 @@ using UnityEngine.UI;
 using System;
 using Random = UnityEngine.Random;
 
+/// <summary> A displayed gameplay object in the beatmap difficulty in the visuals. </summary>
 public class DisplayedObject : MonoBehaviour
 {
+    /// <summary> The object this visual is referring to in the difficulty. </summary>
     public Beatmap.GameplayObject referenceObj;
+    /// <summary> Whether this visual is interactable or not. </summary>
     public bool gameplay = true;
+    /// <summary> The last beat this visual was updated with. </summary>
     float lastBeat = -1;
+    /// <summary> Whether this visual is a note. </summary>
     bool isNote;
+    /// <summary> Whether this visual has been hit yet. </summary>
     bool isHit = false;
+    /// <summary> All of the outline components for every gameobject creating this visual. </summary>
     public List<Outline> outlines = new List<Outline>();
 
     // Note
+    /// <summary> The left approaching circle. </summary>
     public RawImage timingSide1;
+    /// <summary> The right approaching circle. </summary>
     public RawImage timingSide2;
 
     // Swap
+    /// <summary> The bottom left arrow. </summary>
     public RawImage side1Bottom;
+    /// <summary> The top left arrow. </summary>
     public RawImage side1Top;
+    /// <summary> The bottom right arrow. </summary>
     public RawImage side2Bottom;
+    /// <summary> The top right arrow. </summary>
     public RawImage side2Top;
 
-
+    /// <summary> A shortcut reference to the active song info. </summary>
     Beatmap.Info info { get => Beatmap.Active.info; }
 
+    /// <summary> Initialize this visual. </summary>
+    /// <param name="referenceObj"> The object this visual is referring to in the difficulty.  </param>
     public void Initialize(Beatmap.GameplayObject referenceObj)
     {
         this.referenceObj = referenceObj;
         isNote = referenceObj is Beatmap.Note;
 
+        // Initialize outlines.
         outlines.Add(this.GetComponent<Outline>());
         if (isNote)
         {
@@ -47,6 +63,7 @@ public class DisplayedObject : MonoBehaviour
         }
     }
 
+    /// <summary> The different states the visual outlines can be in. </summary>
     public enum OutlineType
     {
         OFF,
@@ -54,6 +71,7 @@ public class DisplayedObject : MonoBehaviour
         COPYING
     }
 
+    /// <summary> Change the state of the visual outlines. </summary>
     public void ChangeOutline(OutlineType outline)
     {
         if (outline == OutlineType.OFF) outlines.ForEach(x =>
@@ -72,6 +90,7 @@ public class DisplayedObject : MonoBehaviour
         });
     }
 
+    /// <summary> Update the visuals of this object based on a beat. </summary>
     public void Animate(float beat)
     {
         if (lastBeat == beat) return;
@@ -85,31 +104,35 @@ public class DisplayedObject : MonoBehaviour
         var startTime = time - Beatmap.Active.spawnInSeconds;
         var endTime = time + Beatmap.Active.spawnOutSeconds;
 
-        // Get the fraction for both sides
+        // Get the window fraction for both sides
         var spawnInFrac = Utils.GetFraction(startTime, time, seconds);
         var spawnOutFrac = Utils.GetFraction(time, endTime, seconds);
 
         isNote = referenceObj is Beatmap.Note;
 
+        // Note code
         if (isNote)
         {
             var image = GetComponent<RawImage>();
+
+            // Constants
             var timingDist = 100;
             var timingScale = 1.2f;
 
             image.raycastTarget = IsSelectable(beat);
 
+            // Before hit
             if (!isHit)
             {
                 if (spawnInFrac != -1)
                 {
+                    // Adjust opacity
                     image.color = Utils.ChangeAlpha(image.color, spawnInFrac);
-
                     timingSide1.color = Utils.ChangeAlpha(timingSide1.color, spawnInFrac);
                     timingSide2.color = Utils.ChangeAlpha(timingSide2.color, spawnInFrac);
 
+                    // Move timing sides
                     var easeMotion = Utils.EaseInExpo((1 - spawnInFrac)) * 0.2f;
-
                     var timing = 1 - spawnInFrac;
                     if ((referenceObj as Beatmap.Note).axis)
                     {
@@ -129,27 +152,37 @@ public class DisplayedObject : MonoBehaviour
                 }
                 else
                 {
+                    // Adjust image opacity
                     var newFrac = Utils.EaseInExpo(1 - spawnOutFrac);
                     image.color = Utils.ChangeAlpha(image.color, newFrac);
 
+                    // Adjust timing side opacity
                     var fadeOutFrac = Mathf.Max(1 - spawnOutFrac * 5, 0);
                     timingSide1.color = Utils.ChangeAlpha(timingSide1.color, fadeOutFrac);
                     timingSide2.color = Utils.ChangeAlpha(timingSide2.color, fadeOutFrac);
                 }
             }
+
+            // After hit
             else
             {
+                // Fade out image
                 image.color = Utils.ChangeAlpha(image.color, Mathf.Max(0, image.color.a - Time.deltaTime * 15));
+
+                // Scale image
                 var growth = Time.deltaTime * 7;
                 this.gameObject.transform.localScale += new Vector3(growth, growth, growth);
             }
         }
+
+        // Swap code
         else
         {
             var heightDist = side1Top.GetComponent<RectTransform>().sizeDelta.x;
 
             if (spawnInFrac != -1)
             {
+                // Move arrows
                 var newFrac = Utils.EaseInExpo(spawnInFrac);
                 var moveFrac = Utils.EaseOutExpo((1 - spawnInFrac));
                 var dist = moveFrac * heightDist * 2;
@@ -174,6 +207,7 @@ public class DisplayedObject : MonoBehaviour
             }
             else
             {
+                // Fade out arrows
                 var fadeOutFrac = Mathf.Max(1 - spawnOutFrac, 0);
                 void AnimSide(RawImage image) => image.color = Utils.ChangeAlpha(image.color, fadeOutFrac);
 
@@ -185,10 +219,16 @@ public class DisplayedObject : MonoBehaviour
         }
     }
 
+    /// <summary> The amount of seconds until the reference object time at a given beat. </summary>
+    /// <param name="beat"> Current beat. </param>
     public float SecondsUntilTime(float beat) => Utils.BeatToSeconds(referenceObj.time - beat, info.BPM);
 
+    /// <summary> Whether the object is in the second half of the late window at a given beat. </summary>
+    /// <param name="beat"> Current beat. </param>
     public bool IsDespawning(float beat) => SecondsUntilTime(beat) < -Beatmap.Active.spawnOutSeconds / 2;
 
+    /// <summary> Whether this object is selectable at a given beat. </summary>
+    /// <param name="beat"> Current beat. </param>
     public bool IsSelectable(float beat)
     {
         if (SecondsUntilTime(beat) > Beatmap.Active.spawnInSeconds / 2) return false;
@@ -196,6 +236,8 @@ public class DisplayedObject : MonoBehaviour
         return true;
     }
 
+    /// <summary> Whether this object is hittable at a given beat. </summary>
+    /// <param name="beat"> Current beat. </param>
     public bool IsHittable(float beat)
     {
         if (SecondsUntilTime(beat) > Beatmap.Active.hittableSeconds) return false;
@@ -207,6 +249,7 @@ public class DisplayedObject : MonoBehaviour
     {
         if (gameplay && isNote)
         {
+            // Checks for note misses.
             if (IsDespawning(lastBeat) && !isHit)
             {
                 var hitObj = Instantiate(hit);
@@ -215,6 +258,7 @@ public class DisplayedObject : MonoBehaviour
                 PlayHandler.Miss();
                 isHit = true;
             }
+            // Checks for note hits.
             else
             {
                 CheckNoteHit(PlayHandler.primaryPos);
@@ -223,8 +267,11 @@ public class DisplayedObject : MonoBehaviour
         }
     }
 
+    /// <summary> The visual hit indicator to spawn when this object is hit. </summary>
     public GameObject hit;
 
+    /// <summary> The direction in degrees of a 2D vector (3D but ignores Z axis) </summary>
+    /// <param name="vector"> The vector to calculate the direction of. </param>
     float AngleFromVector(Vector3 vector)
     {
         vector.Normalize();
@@ -235,20 +282,28 @@ public class DisplayedObject : MonoBehaviour
         return 180 - angle;
     }
 
+    /// <summary> Checks if a note has been hit based on cursor information. </summary>
+    /// <param name="positions"> List of cursor positions for the last few frames. </param>
+    /// <param name="primary"> Whether the cursor is primary or not. </param>
     void CheckNoteHit(List<Vector3> positions, bool primary = true)
     {
+        // Ignore hit check if the note isn't hittable or there are no mouse positions.
         if (!IsHittable(lastBeat)) return;
         if (isHit) return;
         if (positions.Count == 0) return;
+
+        // Check if mouse is within note radius.
         var centerVec = GetCenterVector(positions);
         if (centerVec.magnitude < (Beatmap.noteSize / 2))
         {
+            // Initialize effects of hit
             var image = GetComponent<RawImage>();
             image.color = Utils.ChangeAlpha(image.color, 1);
             timingSide1.gameObject.SetActive(false);
             timingSide2.gameObject.SetActive(false);
             isHit = true;
 
+            // Check if hit is good
             var cursorVec = GetCursorVector(positions);
             var note = (referenceObj as Beatmap.Note);
 
@@ -259,10 +314,11 @@ public class DisplayedObject : MonoBehaviour
 
             if (goodHit)
             {
+                // Calculate score
                 var score = 0f;
                 score += Beatmap.NoteScore.hit;
-                score += GetCenterScore(positions) * Beatmap.NoteScore.center;
-                if (note.axis) score += axisScore * Beatmap.NoteScore.axis;
+                score += GetCenterScore(positions);
+                if (note.axis) score += axisScore;
                 else
                 {
                     var noAxis = Beatmap.NoteScore.hit + Beatmap.NoteScore.center;
@@ -270,11 +326,12 @@ public class DisplayedObject : MonoBehaviour
                     score *= (total / noAxis);
                 }
                 score *= GetTimingScore();
-                PlayHandler.AddScore(score);
                 result = Mathf.Round(score).ToString();
+                PlayHandler.AddScore(score);
             }
             else PlayHandler.Miss();
 
+            // Spawn hit object
             var rot = AngleFromVector(cursorVec);
             var hitObj = Instantiate(hit);
             hitObj.transform.SetParent(this.gameObject.transform.parent);
@@ -282,6 +339,8 @@ public class DisplayedObject : MonoBehaviour
         }
     }
 
+    /// <summary> Get the current vector for the mouse's movement from this frame to the last. </summary>
+    /// <param name="positions"> List of cursor positions for the last few frames. </param>
     Vector3 GetCursorVector(List<Vector3> positions)
     {
         var change = new Vector3();
@@ -290,8 +349,12 @@ public class DisplayedObject : MonoBehaviour
         return change / (positions.Count - 1);
     }
 
+    /// <summary> Get the vector from the mouse position to the center of this object. </summary>
+    /// <param name="positions"> List of cursor positions for the last few frames. </param>
     Vector3 GetCenterVector(List<Vector3> positions) => this.transform.position - positions[positions.Count - 1];
 
+    /// <summary> Get the center score of this object based on given cursor path. </summary>
+    /// <param name="positions"> List of cursor positions for the last few frames. </param>
     float GetCenterScore(List<Vector3> positions)
     {
         var vec = GetCursorVector(positions);
@@ -300,10 +363,15 @@ public class DisplayedObject : MonoBehaviour
         var center = this.gameObject.transform.position;
         var dist = Vector3.Cross(line.direction, center - line.origin).magnitude;
         var score = 1 - Mathf.Min(1, dist / (Beatmap.noteSize / 2));
+        score = Utils.SetLenience(1 - Beatmap.NoteScore.centerLenience, score);
+        score *= Beatmap.NoteScore.center;
 
-        return Utils.SetLenience(1 - Beatmap.NoteScore.centerLenience, score);
+        return score;
     }
 
+    /// <summary> Get the axis score of a note based on given cursor direction. </summary>
+    /// <param name="cursorVec"> The cursor direction vector. </param>
+    /// <param name="direction"> The note axis direction. </param>
     float GetAxisScore(Vector3 cursorVec, float direction)
     {
         var dir2 = (direction + 180) % 360;
@@ -312,10 +380,13 @@ public class DisplayedObject : MonoBehaviour
         var diff1 = Vector2.Angle(cursorVec, dirVec1);
         var diff2 = Vector2.Angle(cursorVec, dirVec2);
         var score = 1 - (Mathf.Min(diff1, diff2) / 90);
+        score = Utils.SetLenience(1 - Beatmap.NoteScore.angleLenience, score);
+        score *= Beatmap.NoteScore.axis;
 
-        return Utils.SetLenience(1 - Beatmap.NoteScore.angleLenience, score);
+        return score;
     }
 
+    // Gets the score multiplier between 0 and 1 based on timing. 
     float GetTimingScore()
     {
         // Get object time in seconds
