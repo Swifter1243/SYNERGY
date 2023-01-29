@@ -179,6 +179,8 @@ public class Beatmap : MonoBehaviour
         /// <summary> The maximum score given for hitting a note directly through it's axis, if any.
         // Zero points are given past hitting the axis at an angle greater than 45 degrees. </summary>
         public static float axis = 70;
+        
+        public static float total = hit + center + axis;
 
         // If a note has no axis, hit and center scores are multiplied to maximize to the same as hit + center + axis.
 

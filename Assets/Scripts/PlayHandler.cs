@@ -34,8 +34,12 @@ public class PlayHandler : MonoBehaviour
     static float maxHealth = 2000;
     /// <summary> The current amount of health. </summary>
     public static float health;
+    /// <summary> The base health given when a note is hit. </summary>
+    public static float hitHealth = 100;
     /// <summary> The base health reduced upon a miss. </summary>
-    static float missHealth = 120;
+    static float missHealth = 200;
+    /// <summary> How much each additional miss in a streak takes away health. </summary>
+    static float missStreakWeight = 0.6f;
     /// <summary> The current level score. </summary>
     public static float score = 0;
     /// <summary> The amount of notes hit in the level. </summary>
@@ -421,7 +425,8 @@ public class PlayHandler : MonoBehaviour
     {
         score += Mathf.Round(value);
         notesHit++;
-        health = Mathf.Clamp(health + value, 0, maxHealth);
+        var addedHealth = (value / Beatmap.NoteScore.total) * hitHealth;
+        health = Mathf.Clamp(health + addedHealth, 0, maxHealth);
         missStreak = Math.Max(0, missStreak - 1);
         updateScoreText = true;
     }
@@ -429,8 +434,8 @@ public class PlayHandler : MonoBehaviour
     /// <summary> Registers a miss in the current session. </summary>
     public static void Miss()
     {
+        var missVal = -(missHealth + missHealth * missStreak * missStreakWeight);
         missStreak++;
-        var missVal = -missHealth * missStreak;
         health = Mathf.Clamp(health + missVal, 0, maxHealth);
         if (health == 0 && !Settings.noFail)
         {
