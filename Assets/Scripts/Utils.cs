@@ -360,4 +360,41 @@ public class Utils : MonoBehaviour
         }
     }
 
+    /// <summary> Get the closest point on a line from a certain point. </summary>
+    /// <param name="linePoint"> The point anchoring the line. </param>
+    /// <param name="lineDirection"> The direction of the line. </param>
+    /// <param name="point"> The point to get the closest point from. </param>
+    public static Vector3 GetClosestPointOnLine(Vector3 linePoint, Vector3 lineDirection, Vector3 point) {
+        var lineToPoint = point - linePoint;
+        var lineDirSqr = lineDirection.sqrMagnitude;
+        var dotLTPAndDirection = Vector3.Dot(lineToPoint, lineDirection);
+        var dist = dotLTPAndDirection / lineDirSqr;
+        return linePoint + lineDirection * dist;
+    }
+
+    /// <summary> Check whether an anchored vector intersects with a circle. </summary>
+    /// <param name="circlePoint"> The position of the circle. </param>
+    /// <param name="circleRadius"> The radius of the circle. </param>
+    /// <param name="linePoint"> The anchor point of the vector. </param>
+    /// <param name="lineDirection"> The direction of the vector </param>
+    public static bool VectorIntersectsCircle(Vector3 circlePoint, float circleRadius, Vector3 linePoint, Vector3 lineDirection) {
+        bool PointIntersectsCircle(Vector3 point) {
+            var pointToCircle = circlePoint - point;
+            return pointToCircle.magnitude < circleRadius;
+        }
+
+        var A = linePoint;
+        var B = linePoint + lineDirection;
+
+        if (PointIntersectsCircle(A)) return true;
+        if (PointIntersectsCircle(B)) return true;
+
+        var closestPointOnLine = GetClosestPointOnLine(linePoint, lineDirection, circlePoint);
+        var distToA = (closestPointOnLine - A).magnitude;
+        var distToB = (closestPointOnLine - B).magnitude;
+        var lineLength = (lineDirection).magnitude;
+        var tooFar = distToA > lineLength || distToB > lineLength;
+
+        return PointIntersectsCircle(closestPointOnLine) && !tooFar;
+    }
 }

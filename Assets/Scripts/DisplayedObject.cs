@@ -294,9 +294,12 @@ public class DisplayedObject : MonoBehaviour
         if (isHit) return;
         if (positions.Count == 0) return;
 
-        // Check if mouse is within note radius.
-        var centerVec = GetCenterVector(positions);
-        if (centerVec.magnitude < (Beatmap.noteSize / 2))
+        // Check if mouse vector intersects with note.
+        var noteCenter = this.transform.position;
+        var noteRadius = Beatmap.noteSize / 2;
+        var cursorPos = positions[positions.Count - 1];
+        var lineDir = -GetCursorVector(positions);
+        if (Utils.VectorIntersectsCircle(noteCenter, noteRadius, cursorPos, lineDir))
         {
             // Initialize effects of hit
             var image = GetComponent<RawImage>();
