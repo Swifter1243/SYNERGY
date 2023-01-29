@@ -68,7 +68,7 @@ public class SelectableSong : MonoBehaviour
 
         gameObject.transform.localPosition = new Vector3(xPos, 0);
     }
-    
+
     /// <summary> Animate the chosen position of the song. </summary>
     /// <param name="anim"> Progress of the animation between 0 and 1. </param>
     public void AnimateChoose(float anim)
@@ -108,9 +108,20 @@ public class SelectableSong : MonoBehaviour
     /// <param name="path"> Path to the audio. </param>
     public IEnumerator LoadAudio(string path)
     {
-        var www = UnityWebRequestMultimedia.GetAudioClip($"file:///{Uri.EscapeDataString($"{path}")}", AudioType.OGGVORBIS);
-        yield return www.SendWebRequest();
-        var clip = DownloadHandlerAudioClip.GetContent(www);
-        this.clip = clip;
+        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(path, AudioType.OGGVORBIS))
+        {
+            yield return www.SendWebRequest();
+
+            if (www.isNetworkError)
+            {
+                Debug.LogError(www.error);
+                yield break;
+            }
+
+            ((DownloadHandlerAudioClip)www.downloadHandler).streamAudio = true;
+
+            if (www.isNetworkError) Debug.Log(www.error);
+            else clip = ((DownloadHandlerAudioClip)www.downloadHandler).audioClip;
+        }
     }
 }

@@ -102,6 +102,11 @@ public class SongSelection : MonoBehaviour
     {
         CalculateDifference();
 
+        // Loading icon
+        var loadingRotation = loadingImage.transform.localRotation.eulerAngles;
+        loadingRotation.z = (loadingRotation.z - Time.deltaTime * 300) % 360;
+        loadingImage.transform.localRotation = Quaternion.Euler(loadingRotation);
+
         // If nothing is chosen but not on selected index
         if (isMoving() && chosenAnim < indexThreshold)
         {
@@ -147,7 +152,7 @@ public class SongSelection : MonoBehaviour
         // Audio
         var volumeSpeed = Time.deltaTime * 2;
         var volume = Settings.masterVolume;
-
+        
         if (targetIndex != audioIndex)
         {
             audioPreview = 0;
@@ -188,6 +193,10 @@ public class SongSelection : MonoBehaviour
     public CanvasGroup songInfo;
     /// <summary> The transform of the panel displaying song difficulties. </summary>
     RectTransform songPanelTransform;
+    /// <summary> The image displayed when a song is waiting on audio being loaded. </summary>
+    public RawImage loadingImage;
+    /// <summary> The canvas group of the object parenting the difficulty buttons. </summary>
+    public CanvasGroup difficulties;
     /// <summary> Whether the difficulty buttons have been updated. </summary>
     bool panelUpdated = false;
 
@@ -211,11 +220,23 @@ public class SongSelection : MonoBehaviour
         songInfo.alpha = 1 - Utils.EaseOutExpo(chosenAnim);
         songPanel.blocksRaycasts = chosenAnim > 0.5f;
 
-        // Update difficulty buttons
+        // Update difficulty panel
+        var hoveredSong = GetHoveredSong();
+
         if (!panelUpdated)
         {
             panelUpdated = true;
-            diffButtons.ForEach(x => x.CheckVisibility(GetHoveredSong()));
+            diffButtons.ForEach(x => x.CheckVisibility(hoveredSong));
+        }
+
+        if (hoveredSong.clip != null && difficulties.alpha == 0) {
+            difficulties.alpha = 1;
+            loadingImage.color = Utils.ChangeAlpha(loadingImage.color, 0);
+        }
+
+        if (hoveredSong.clip == null && difficulties.alpha == 1) {
+            difficulties.alpha = 0;
+            loadingImage.color = Utils.ChangeAlpha(loadingImage.color, 1);
         }
     }
 
