@@ -31,42 +31,9 @@ class OnBuild : IPostprocessBuild
 /// <summary> A collection of useful tools for programming this game. </summary>
 public class Utils : MonoBehaviour
 {
-    public static void CopyDirectory(string sourceDir, string destinationDir, bool recursive)
-    {
-        // Get information about the source directory
-        var dir = new DirectoryInfo(sourceDir);
-
-        // Check if the source directory exists
-        if (!dir.Exists)
-            throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
-
-        // Cache directories before we start copying
-        DirectoryInfo[] dirs = dir.GetDirectories();
-
-        // Create the destination directory
-        Directory.CreateDirectory(destinationDir);
-
-        // Get the files in the source directory and copy to the destination directory
-        foreach (FileInfo file in dir.GetFiles())
-        {
-            string targetFilePath = Path.Combine(destinationDir, file.Name);
-            file.CopyTo(targetFilePath);
-        }
-
-        // If recursive and copying subdirectories, recursively call this method
-        if (recursive)
-        {
-            foreach (DirectoryInfo subDir in dirs)
-            {
-                string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
-                CopyDirectory(subDir.FullName, newDestinationDir, true);
-            }
-        }
-    }
-
     /// <summary> Whether the levels should be from a hardcoded directory, or based on the application directory.
     /// Used for testing purposes, should be false on release. </summary>
-    public static bool useEditorSongsFolder = false;
+    public static bool useEditorSongsFolder = true;
 
     /// <summary> Convert a beat in a song to seconds. </summary>
     /// <param name="beat"> The beat to convert. </param>
@@ -355,4 +322,42 @@ public class Utils : MonoBehaviour
         var safePath = path.Replace(@"/", @"\");
         System.Diagnostics.Process.Start("explorer.exe", "/root," + safePath);
     }
+
+    /// <summary> Copy a directory from one location to another. </summary>
+    /// <param name="sourceDir"> The source directory to copy from. </param>
+    /// <param name="destinationDir"> The destination directory to be copied to. </param>
+    /// <param name="recursive"> Whether to recursively copy contents of copied directories. </param>
+    public static void CopyDirectory(string sourceDir, string destinationDir, bool recursive)
+    {
+        // Get information about the source directory
+        var dir = new DirectoryInfo(sourceDir);
+
+        // Check if the source directory exists
+        if (!dir.Exists)
+            throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
+
+        // Cache directories before we start copying
+        DirectoryInfo[] dirs = dir.GetDirectories();
+
+        // Create the destination directory
+        Directory.CreateDirectory(destinationDir);
+
+        // Get the files in the source directory and copy to the destination directory
+        foreach (FileInfo file in dir.GetFiles())
+        {
+            string targetFilePath = Path.Combine(destinationDir, file.Name);
+            file.CopyTo(targetFilePath);
+        }
+
+        // If recursive and copying subdirectories, recursively call this method
+        if (recursive)
+        {
+            foreach (DirectoryInfo subDir in dirs)
+            {
+                string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
+                CopyDirectory(subDir.FullName, newDestinationDir, true);
+            }
+        }
+    }
+
 }
