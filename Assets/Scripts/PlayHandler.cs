@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.Networking;
 using System;
 
+/// <summary> Handler for playing scene. </summary>
 public class PlayHandler : MonoBehaviour
 {
     /// <summary> The current sections into the song. </summary>
@@ -167,7 +168,7 @@ public class PlayHandler : MonoBehaviour
         missStreak = 0;
         health = maxHealth / 2;
         scoreValueUtils = new Utils.RectTransformUtils(scoreValue);
-        scoreValueUtils.right = GetScoreValueWidth(health);
+        scoreValueUtils.right = GetHealthValueWidth(health);
 
         // Initialize info and map visuals
         info = Beatmap.Active.info;
@@ -182,7 +183,7 @@ public class PlayHandler : MonoBehaviour
         };
 
         // Initialize video
-        var videoPath = Utils.GetVideoPath(Beatmap.Active.songPath, info);
+        var videoPath = Beatmap.GetVideoPath(Beatmap.Active.songPath, info);
         mapVisuals.LoadVideo(videoPath);
 
         // Initialize intro animations
@@ -288,7 +289,7 @@ public class PlayHandler : MonoBehaviour
         if (paused) return;
 
         // Animate health bar
-        ScoreValueApproach(health);
+        HealthValueApproach(health);
 
         // Resize cursor if screen size changes
         sizeWatcher.Watch(Screen.width);
@@ -385,34 +386,47 @@ public class PlayHandler : MonoBehaviour
         secondaryCursorTransform.sizeDelta = new Vector2(cursorSize, cursorSize);
     }
 
+    /// <summary> Transform for the health bar base. </summary>
     public RectTransform scoreBar;
+    /// <summary> Transform for the health bar value. </summary>
     public RectTransform scoreValue;
+    /// <summary> Transform handler for the healthbar value transform. </summary>
     public Utils.RectTransformUtils scoreValueUtils;
 
-    float GetScoreValueWidth(float value)
+    /// <summary> Gets the width of the health bar given an amount of health. </summary>
+    /// <param name="value"> The amount of heatlh. </param>
+    float GetHealthValueWidth(float value)
     {
         var fraction = value / maxHealth;
         var width = scoreBar.sizeDelta.x;
         return (1 - fraction) * width;
     }
 
-    void ScoreValueApproach(float value)
+    /// <summary> Approaches the width of the health bar to a certain amount of health. </summary>
+    /// <param name="value"> The amount of heatlh. </param>
+    void HealthValueApproach(float value)
     {
-        var newWidth = GetScoreValueWidth(value);
+        var newWidth = GetHealthValueWidth(value);
         scoreValueUtils.right = Utils.Approach(scoreValueUtils.right, newWidth, 5);
     }
 
+    /// <summary> The amount of misses in a row. </summary>
     static float missStreak = 0;
+    /// <summary> If set to true, the score text will be updated the next frame. </summary>
     static bool updateScoreText = false;
+
+    /// <summary> Adds score to the current session. </summary>
+    /// <param name="score"> The amount of score to add. </param>
     public static void AddScore(float value)
     {
         score += Mathf.Round(value);
         notesHit++;
         health = Mathf.Clamp(health + value, 0, maxHealth);
-        missStreak = 0;
+        missStreak = Math.Max(0, missStreak - 1);
         updateScoreText = true;
     }
 
+    /// <summary> Registers a miss in the current session. </summary>
     public static void Miss()
     {
         missStreak++;

@@ -24,8 +24,8 @@ public class SongSelectionDifficulty : MonoBehaviour
     public void CheckVisibility(SelectableSong song)
     {
         this.song = song;
-        diffPath = Utils.GetDiffPath(song.path, diffName);
-        var audioPath = Utils.GetAudioPath(song.path, song.info);
+        diffPath = Beatmap.GetDiffPath(song.path, diffName);
+        var audioPath = Beatmap.GetAudioPath(song.path, song.info);
         if (File.Exists(diffPath) && File.Exists(audioPath)) Enable();
         else Disable();
     }

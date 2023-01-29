@@ -178,7 +178,7 @@ public class EditorHandler : MonoBehaviour
             var diffName = "/hard.dat";
             var diffPath = songPath + diffName;
             var audioPath = songPath + "/song.ogg";
-            var songInfo = SongHandler.getInfoFromPath(songPath);
+            var songInfo = Beatmap.GetInfoFromPath(songPath);
 
             Beatmap.Active.songPath = songPath;
             Beatmap.Active.diffName = diffName;
@@ -214,13 +214,13 @@ public class EditorHandler : MonoBehaviour
         audioSource.volume = Settings.masterVolume;
         if (Beatmap.Active.audio == null)
         {
-            var audioPath = Utils.GetAudioPath(Beatmap.Active.songPath, info);
+            var audioPath = Beatmap.GetAudioPath(Beatmap.Active.songPath, info);
             StartCoroutine(LoadAudio(audioPath));
         }
         else SetAudio(Beatmap.Active.audio);
 
         // Video
-        var videoPath = Utils.GetVideoPath(Beatmap.Active.songPath, info);
+        var videoPath = Beatmap.GetVideoPath(Beatmap.Active.songPath, info);
         mapVisuals.LoadVideo(videoPath);
 
         // Initializing scrollbar

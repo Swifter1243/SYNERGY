@@ -52,7 +52,7 @@ public class DifficultyButton : MonoBehaviour
     /// <summary> Check if this difficulty exists and update visuals. </summary>
     public void CheckVisibility()
     {
-        diffPath = Utils.GetDiffPath(songCreation.songPath, diff);
+        diffPath = Beatmap.GetDiffPath(songCreation.songPath, diff);
         if (File.Exists(diffPath)) Enable();
         else Disable();
     }

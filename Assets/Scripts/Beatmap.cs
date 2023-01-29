@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Video;
 using System;
+using System.IO;
 
 /// <summary> Logic relevant to the internals of beatmaps. </summary>
 public class Beatmap : MonoBehaviour
@@ -212,4 +213,32 @@ public class Beatmap : MonoBehaviour
             lenienceOut /= Active.spawnOutSeconds;
         }
     }
+
+    /// <summary> Get the Info class from info file of a song. </summary>
+    /// <param name="path"> The path of the song. </param>
+    public static Beatmap.Info GetInfoFromPath(string path)
+    {
+        var infoPath = GetInfoPath(path);
+        var infoData = File.ReadAllText(infoPath);
+        return JsonUtility.FromJson<Beatmap.Info>(infoData);
+    }
+
+    /// <summary> Gets the path to a difficulty's dat file in a song. </summary>
+    /// <param name="songPath"> The path of the song. </param>
+    /// <param name="diff"> The name of the difficulty. </param>
+    public static string GetDiffPath(string songPath, string diff) => songPath + "\\" + diff + ".dat";
+
+    /// <summary> Gets the path to a song's info.dat. </summary>
+    /// <param name="songPath"> The path of the song. </param>
+    public static string GetInfoPath(string songPath) => songPath + "\\info.dat";
+
+    /// <summary> Gets the path to the audio file of a song. </summary>
+    /// <param name="songPath"> The path of the song. </param>
+    /// <param name="info"> The info of the song. </param>
+    public static string GetAudioPath(string songPath, Beatmap.Info info) => songPath + "\\" + info.song;
+
+    /// <summary> Gets the path to the video file of a song. </summary>
+    /// <param name="songPath"> The path of the song. </param>
+    /// <param name="info"> The info of the song. </param>
+    public static string GetVideoPath(string songPath, Beatmap.Info info) => songPath + "\\" + info.video;
 }

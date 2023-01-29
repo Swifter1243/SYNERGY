@@ -5,23 +5,32 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
+/// <summary> Handler for the editor song selection. </summary>
 public class SongHandler : MonoBehaviour
 {
+    /// <summary> The object that will be spawned for each song. </summary>
     public Button songPrefab;
+    /// <summary> The object that parents the popup to create a new map. </summary>
     public GameObject createPanel;
+    /// <summary> The input field for the name of a new map. </summary>
     public InputField createText;
+    /// <summary> The reference to this scene's SongCreation class. </summary>
     public SongCreation songCreation;
+    /// <summary> The panel that contains the song selection UI. </summary>
     public GameObject songSelectionPanel;
+    /// <summary> The panel that contains the song info editing UI. </summary>
     public GameObject songCreationPanel;
+    /// <summary> The text that displays an error on the song creation panel.  </summary>
     public Text errorText;
+    /// <summary> If set to a path to a song, it will be loaded in SongCreation upon scene awake. </summary>
     public static string loadSong;
 
+    /// <summary> The folder where songs are stored. </summary>
     public static string songsFolder
     {
         get => Utils.useEditorDirectory ? "E:/Users/Unity/SYNERGY/Levels" : Application.dataPath + "/Levels";
     }
 
-    // Start is called before the first frame update
     void Awake()
     {
         if (loadSong != null)
@@ -32,6 +41,7 @@ public class SongHandler : MonoBehaviour
         else PopulateSongs();
     }
 
+    /// <summary> Open the menu to create a new song. </summary>
     public void ShowCreateMenu()
     {
         createPanel.SetActive(true);
@@ -40,6 +50,7 @@ public class SongHandler : MonoBehaviour
         createText.OnPointerClick(new PointerEventData(EventSystem.current));
     }
 
+    /// <summary> Show an error on the song creation menu. </summary>
     public void CreateMenuError(string error)
     {
         errorText.text = error;
@@ -47,11 +58,13 @@ public class SongHandler : MonoBehaviour
         errorColor.a = 1;
         errorText.color = errorColor;
     }
-
+    
     void Update()
     {
+        // Escapes to main menu on clicking escape
         if (Input.GetKeyDown(KeyCode.Escape)) songCreation.MainMenu();
 
+        // Animates error text
         if (errorText.color.a > 0)
         {
             var errorColor = errorText.color;
@@ -60,13 +73,7 @@ public class SongHandler : MonoBehaviour
         }
     }
 
-    public static Beatmap.Info getInfoFromPath(string path)
-    {
-        var infoPath = path + "/info.dat";
-        var infoData = File.ReadAllText(infoPath);
-        return JsonUtility.FromJson<Beatmap.Info>(infoData);
-    }
-
+    /// <summary> Loads all of the songs from the song folder into the song selection. </summary>
     public void PopulateSongs()
     {
         // Manage Visibility
@@ -85,7 +92,7 @@ public class SongHandler : MonoBehaviour
         foreach (var f in folders)
         {
             // Get Info.dat data
-            var info = getInfoFromPath(f.ToString());
+            var info = Beatmap.GetInfoFromPath(f.ToString());
 
             // Spawn UI element
             Button song = Instantiate(songPrefab);

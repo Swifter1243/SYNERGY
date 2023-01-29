@@ -1,11 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.IO;
 using UnityEngine;
 
 public class Utils : MonoBehaviour
 {
-    public static bool useEditorDirectory = true; // TODO: Make this false on release.
+    public static bool useEditorDirectory = false; // TODO: Make this false on release.
     public static float BeatToSeconds(float beat, float bpm) => beat / bpm * 60;
     public static float SecondsToBeat(float seconds, float bpm) => seconds * bpm / 60;
     public static float GetSongBeats(float songSeconds, float bpm) => Mathf.Ceil(SecondsToBeat(songSeconds, bpm));
@@ -156,11 +157,22 @@ public class Utils : MonoBehaviour
     }
 
     public static float Approach(float old, float target, float speed = 1) => Mathf.Lerp(old, target, Time.deltaTime * speed);
-    public static string GetDiffPath(string songPath, string diff) => songPath + "\\" + diff + ".dat";
-    public static string GetAudioPath(string songPath, Beatmap.Info info) => songPath + "\\" + info.song;
-    public static string GetVideoPath(string songPath, Beatmap.Info info) => songPath + "\\" + info.video;
-    public static float MirrorAngleX(float angle) {
+    public static float MirrorAngleX(float angle)
+    {
         angle = (180 - angle) % 360;
         return angle < 0 ? 360 + angle : angle;
+    }
+    public static Texture2D LoadImage(string path)
+    {
+        var image = new Texture2D(2, 2);
+        var imageData = File.ReadAllBytes(path);
+        image.LoadImage(imageData);
+        return image;
+    }
+
+    public static void OpenFileExplorer(string path)
+    {
+        var safePath = path.Replace(@"/", @"\");
+        System.Diagnostics.Process.Start("explorer.exe", "/root," + safePath);
     }
 }
