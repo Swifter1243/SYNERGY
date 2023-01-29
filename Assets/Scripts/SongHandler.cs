@@ -25,10 +25,12 @@ public class SongHandler : MonoBehaviour
     /// <summary> If set to a path to a song, it will be loaded in SongCreation upon scene awake. </summary>
     public static string loadSong;
 
+    /// <summary> A universal songs folder directory for testing. </summary>
+    public static string editorSongsFolder = "E:/Users/Unity/SYNERGY/Levels";
     /// <summary> The folder where songs are stored. </summary>
     public static string songsFolder
     {
-        get => Utils.useEditorDirectory ? "E:/Users/Unity/SYNERGY/Levels" : Application.dataPath + "/Levels";
+        get => Utils.useEditorSongsFolder ? editorSongsFolder : Application.dataPath + "/Levels";
     }
 
     void Awake()

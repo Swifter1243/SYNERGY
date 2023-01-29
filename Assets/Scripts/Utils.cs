@@ -4,11 +4,69 @@ using System;
 using System.IO;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+using UnityEditor.Build;
+using UnityEditor.Build.Reporting;
+
+[Obsolete]
+class OnBuild : IPostprocessBuild
+{
+    public int callbackOrder { get { return 0; } }
+    public void OnPostprocessBuild(BuildTarget target, string path)
+    {
+        // Move levels to build if not using editor songs folder
+        if (!Utils.useEditorSongsFolder)
+        {
+            var dataPath = Path.GetDirectoryName(path) + "\\SYNERGY_Data";
+            var levelsPath = dataPath + "\\Levels";
+            var editorSongsPath = SongHandler.editorSongsFolder;
+
+            Utils.CopyDirectory(editorSongsPath, levelsPath, true);
+        }
+    }
+}
+#endif
+
+/// <summary> A collection of useful tools for programming this game. </summary>
 public class Utils : MonoBehaviour
 {
+    public static void CopyDirectory(string sourceDir, string destinationDir, bool recursive)
+    {
+        // Get information about the source directory
+        var dir = new DirectoryInfo(sourceDir);
+
+        // Check if the source directory exists
+        if (!dir.Exists)
+            throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
+
+        // Cache directories before we start copying
+        DirectoryInfo[] dirs = dir.GetDirectories();
+
+        // Create the destination directory
+        Directory.CreateDirectory(destinationDir);
+
+        // Get the files in the source directory and copy to the destination directory
+        foreach (FileInfo file in dir.GetFiles())
+        {
+            string targetFilePath = Path.Combine(destinationDir, file.Name);
+            file.CopyTo(targetFilePath);
+        }
+
+        // If recursive and copying subdirectories, recursively call this method
+        if (recursive)
+        {
+            foreach (DirectoryInfo subDir in dirs)
+            {
+                string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
+                CopyDirectory(subDir.FullName, newDestinationDir, true);
+            }
+        }
+    }
+
     /// <summary> Whether the levels should be from a hardcoded directory, or based on the application directory.
     /// Used for testing purposes, should be false on release. </summary>
-    public static bool useEditorDirectory = false;
+    public static bool useEditorSongsFolder = false;
 
     /// <summary> Convert a beat in a song to seconds. </summary>
     /// <param name="beat"> The beat to convert. </param>
