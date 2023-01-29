@@ -312,7 +312,7 @@ public class DisplayedObject : MonoBehaviour
             var goodHit = note.primary == primary;
             var result = "BAD";
             var axisScore = note.axis ? GetAxisScore(cursorVec, note.direction) : 0;
-            if (note.axis && axisScore < 0.5f) goodHit = false;
+            if (note.axis && axisScore / Beatmap.NoteScore.axis < 0.5f) goodHit = false;
 
             if (goodHit)
             {
