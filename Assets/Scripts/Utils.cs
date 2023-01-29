@@ -33,7 +33,7 @@ public class Utils : MonoBehaviour
 {
     /// <summary> Whether the levels should be from a hardcoded directory, or based on the application directory.
     /// Used for testing purposes, should be false on release. </summary>
-    public static bool useEditorSongsFolder = true;
+    public static bool useEditorSongsFolder = false;
 
     /// <summary> Convert a beat in a song to seconds. </summary>
     /// <param name="beat"> The beat to convert. </param>
