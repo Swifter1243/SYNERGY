@@ -375,8 +375,8 @@ public class DisplayedObject : MonoBehaviour
     float GetAxisScore(Vector3 cursorVec, float direction)
     {
         var dir2 = (direction + 180) % 360;
-        var dirVec1 = Utils.GetPosFromAngle((direction + 90) % 360);
-        var dirVec2 = Utils.GetPosFromAngle((dir2 + 90) % 360);
+        var dirVec1 = Utils.GetPosFromAngle2D((direction + 90) % 360);
+        var dirVec2 = Utils.GetPosFromAngle2D((dir2 + 90) % 360);
         var diff1 = Vector2.Angle(cursorVec, dirVec1);
         var diff2 = Vector2.Angle(cursorVec, dirVec2);
         var score = 1 - (Mathf.Min(diff1, diff2) / 90);

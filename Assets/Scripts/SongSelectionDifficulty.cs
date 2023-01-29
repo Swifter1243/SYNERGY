@@ -5,14 +5,22 @@ using System.IO;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
+/// <summary> The difficulty buttons in the song selection. </summary>
 public class SongSelectionDifficulty : MonoBehaviour
 {
+    /// <summary> The name of the difficulty. </summary>
     public string diffName;
+    /// <summary> The path to the difficulty. </summary>
     string diffPath;
+    /// <summary> The cover art of the song.  </summary>
     public Image image;
+    /// <summary> The text displaying the name of the difficulty. </summary>
     public Text text;
+    /// <summary> The button component of this object. </summary>
     public Button button;
+    /// <summary> The song object this difficulty is attached to. </summary>
     public SelectableSong song;
+    /// <summary> The reference to the scene SongSelection class. </summary>
     public SongSelection songSelection;
 
     void Start()
@@ -21,6 +29,8 @@ public class SongSelectionDifficulty : MonoBehaviour
         songSelection.diffButtons.Add(this);
     }
 
+    /// <summary> Check if the difficulty exists and update UI accordingly. </summary>
+    /// <param name="song"> The relevant song. </param>
     public void CheckVisibility(SelectableSong song)
     {
         this.song = song;
@@ -30,15 +40,17 @@ public class SongSelectionDifficulty : MonoBehaviour
         else Disable();
     }
 
+    /// <summary> Enable this difficulty button. </summary>
     void Enable()
     {
         image.color = new Color(1, 1, 1, 1);
         text.color = new Color(1, 1, 1, 1);
         button.interactable = true;
         button.onClick.RemoveAllListeners();
-        button.onClick.AddListener(delegate () { OpenSong(song); });
+        button.onClick.AddListener(delegate () { OpenSong(); });
     }
 
+    /// <summary> Disable this difficulty button. </summary>
     void Disable()
     {
         image.color = new Color(63 / 255, 63 / 255, 63 / 255, 1);
@@ -46,7 +58,8 @@ public class SongSelectionDifficulty : MonoBehaviour
         button.interactable = false;
     }
 
-    void OpenSong(SelectableSong song)
+    /// <summary> Play this song in the playing scene. </summary>
+    void OpenSong()
     {
         Beatmap.Active.songPath = song.path;
         Beatmap.Active.coverArt = (Texture2D)song.coverArt.texture;

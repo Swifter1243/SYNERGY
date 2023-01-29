@@ -29,5 +29,5 @@ public class Background : MonoBehaviour
     }
 
     /// <summary> Gets the offset position based on the mouse's position. </summary>
-    static Vector2 getOffset() => UIMovement.getMouseOffset(Input.mousePosition, offsetStrength);
+    static Vector2 getOffset() => UIMovement.GetCenterOffset(Input.mousePosition, offsetStrength);
 }

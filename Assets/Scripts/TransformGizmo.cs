@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class TransformGizmo : MonoBehaviour
 {
+    /// <summary> All the modes that the transform gizmo can be in. </summary>
     public enum TransformMode
     {
         IDLE,
@@ -12,36 +13,61 @@ public class TransformGizmo : MonoBehaviour
         TRANSLATING
     }
 
+    /// <summary> The currently selected displayed object. </summary>
     public static GameObject selectedObj;
+    /// <summary> The reference object in the difficulty of the selected object. </summary>
     public static Beatmap.GameplayObject referenceObj;
+    /// <summary> The rect transform of the selected object. </summary>
     public static RectTransform objRect;
+    /// <summary> The DisplayedObject class of the selected object. </summary>
     public static DisplayedObject objDisplay;
+    /// <summary> Whether the selected object in a note. </summary>
     public static bool isNote;
+    /// <summary> If the selected object is vertical assuming it's a swap. </summary>
     public static bool isVertical = false;
+    /// <summary> The game object of the transform gizmo. </summary>
     static GameObject self;
+    /// <summary> The canvas in the editor scene. </summary>
     public static Canvas canvas;
+    /// <summary> The EditorHandler component of the editor scene. </summary>
     public EditorHandler editorHandler;
 
+    /// <summary> The current mode of the transform gizmo. </summary>
     static TransformMode transformMode = TransformMode.IDLE;
+    /// <summary> A value used to queue an action after clicking. </summary>
     float clickBuffer = 100;
+    /// <summary> Avoid deselecting the selected object on the next frame if this is true. </summary>
     public static bool avoidDeselect = false;
+    /// <summary> Whether the user is currently dragging the selected object. </summary>
     bool dragging = false;
+    /// <summary> True when the user clicks on the selected object.  </summary>
     public static bool clickedSelf = false;
 
     // Translation
+    /// <summary> The selected object position before a translation. </summary>
     static Vector3 startPos;
+    /// <summary> The cursor position before a translation. </summary>
     static Vector3 startCursorPos;
+    /// <summary> Whether the X axis is locked during a translation. </summary>
     static bool lockedX = false;
+    /// <summary> Whether the Y axis is locked during a translation. </summary>
     static bool lockedY = false;
+    /// <summary> Whether a swap started as vertical before a translation. </summary>
     static bool startVertical = false;
 
     // Rotation
+    /// <summary> The selected object rotation before a rotation. </summary>
     static float startRot;
+    /// <summary> The angle from the selected object to the mouse before a rotation. </summary>
     static float startMouseRot;
 
+    /// <summary> Whether a swap started on the x axis before a rotation. </summary>
     public static bool startAxisIsX;
+
+    /// <summary> If the selected object is currently a duplicated object. </summary>
     static bool duplicating;
 
+    /// <summary> A class used for math with guides while transforming. </summary>
     class TransformGuide
     {
         public TransformGuide(float position, bool vertical)
@@ -50,15 +76,21 @@ public class TransformGizmo : MonoBehaviour
             this.vertical = vertical;
         }
 
+        /// <summary> The X or Y position of this guide's axis. </summary>
         public float position;
+        /// <summary> Whether this guide's axis is vertical. </summary>
         public bool vertical;
 
+        /// <summary> The distance from an X or Y point to this guide's axis. </summary>
         public float DistanceTo(float position) => Mathf.Abs(this.position - position);
     }
 
+    /// <summary> All active transform guides. </summary>
     List<TransformGuide> guides = new List<TransformGuide>();
+    /// <summary> A reference to the editor's visuals. </summary>
     public MapVisuals mapVisuals;
 
+    /// <summary> Action to run after click buffer empties. </summary>
     void ClickBuffer()
     {
         if (!avoidDeselect && selectedObj != null) Deselect();
@@ -74,11 +106,16 @@ public class TransformGizmo : MonoBehaviour
         avoidDeselect = false;
     }
 
+    /// <summary> The current X axis guide the selected object will snap to. </summary>
     TransformGuide xGuide;
+    /// <summary> The current Y axis guide the selected object will snap to. </summary>
     TransformGuide yGuide;
+    /// <summary> The distance the selected object has to be within to snap to a guide. </summary>
     public float snapDist = 20;
+    /// <summary> The distance the selected object has to be away from a guide to leave it's snapping. </summary>
     public float leaveDist = 80;
 
+    /// <summary> Clear current guides the selected object can snap to. </summary>
     void ClearGuides()
     {
         guides.Clear();
@@ -92,9 +129,12 @@ public class TransformGizmo : MonoBehaviour
         canvas = GetComponentInParent<Canvas>();
     }
 
+    /// <summary> If the selected object is being dragged on the timeline. </summary>
     static bool timeDragging = false;
+    /// <summary> The time before the selected object was being dragged on the timeline. </summary>
     static float timeDragStart = 0;
 
+    /// <summary> Run process of the transform gizmo. </summary>
     public void DoProcess()
     {
         // Object selection
@@ -112,7 +152,7 @@ public class TransformGizmo : MonoBehaviour
         if (this.gameObject.activeSelf == false) this.gameObject.SetActive(true);
         this.transform.position = selectedObj.transform.position;
 
-        // Deleting With Key
+        // Deleting with key
         if (Input.GetKeyDown(KeyCode.Delete))
         {
             EditorHandler.DeleteObject(referenceObj);
@@ -120,7 +160,7 @@ public class TransformGizmo : MonoBehaviour
             return;
         }
 
-        // Duplicate Object
+        // Duplicate object
         if (Input.GetKeyDown(KeyCode.D) && !duplicating)
         {
             var newObj = Beatmap.Copy(referenceObj);
@@ -131,7 +171,7 @@ public class TransformGizmo : MonoBehaviour
             duplicating = true;
         }
 
-        // Mirror Object
+        // Mirror object
         if (Input.GetKeyDown(KeyCode.T) && referenceObj is Beatmap.Note note)
         {
             var horizontalMirror = mapVisuals.horizontalMirror;
@@ -158,22 +198,22 @@ public class TransformGizmo : MonoBehaviour
             editorHandler.AddObject(newNote, true);
         }
 
-        // Time Dragging (Press)
+        // Time dragging (press)
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
             timeDragging = true;
             timeDragStart = referenceObj.time;
         }
 
-        // Time Dragging
+        // Time dragging
         if (Input.GetKey(KeyCode.LeftShift) && timeDragging)
         {
             referenceObj.time = EditorHandler.scrollBeat;
             editorHandler.DrawGrid();
         }
 
-        // Time Dragging (Release)
-        if (Input.GetKeyUp(KeyCode.LeftShift)) FinishDrag();
+        // Time dragging (release)
+        if (Input.GetKeyUp(KeyCode.LeftShift)) FinishTimeDrag();
 
         // Translation
         if (Input.GetKeyDown(KeyCode.G))
@@ -186,24 +226,24 @@ public class TransformGizmo : MonoBehaviour
             }
         }
 
-        // Locking X Axis
+        // Locking X axis
         if (Input.GetKeyDown(KeyCode.X))
         {
             lockedY = false;
             lockedX = !lockedX;
         }
 
-        // Locking Y Axis
+        // Locking Y axis
         if (Input.GetKeyDown(KeyCode.Z))
         {
             lockedX = false;
             lockedY = !lockedY;
         }
 
-        // Finishing Translation From Click
+        // Finishing translation from click
         if (Input.GetMouseButtonDown(0) && transformMode == TransformMode.TRANSLATING && !dragging && !Input.GetKey(KeyCode.C)) FinishTranslation();
 
-        // Translating Position
+        // Translating position
         if (transformMode == TransformMode.TRANSLATING)
         {
             if (isNote)
@@ -213,6 +253,7 @@ public class TransformGizmo : MonoBehaviour
                 if (lockedY) delta.x = 0;
                 var pos = startPos + delta;
 
+                // Guide snapping
                 if (guides.Count > 0)
                 {
                     TransformGuide closestX = null;
@@ -277,8 +318,10 @@ public class TransformGizmo : MonoBehaviour
             }
         }
 
+        // Finish rotation from click
         if (Input.GetMouseButtonDown(0) && transformMode == TransformMode.ROTATING && !dragging) FinishRotation();
 
+        // Translating rotation
         if (transformMode == TransformMode.ROTATING)
         {
             var angle = startMouseRot + startRot - GetMouseAngle();
@@ -315,7 +358,7 @@ public class TransformGizmo : MonoBehaviour
             dragging = false;
         }
 
-        // Guides
+        // Refreshing guides
         if (Input.GetKeyDown(KeyCode.LeftControl) && transformMode == TransformMode.TRANSLATING && isNote)
         {
             ClearGuides();
@@ -328,9 +371,12 @@ public class TransformGizmo : MonoBehaviour
             }
         }
 
+        // Clearing guides
         if (!Input.GetKey(KeyCode.LeftControl) && guides.Count > 0) ClearGuides();
     }
 
+    /// <summary> Select an object with the transform gizmo. </summary>
+    /// <param name="obj"> The object to select. </param>
     public static void Select(GameObject obj)
     {
         var displayedObj = obj.GetComponent<DisplayedObject>();
@@ -346,6 +392,8 @@ public class TransformGizmo : MonoBehaviour
         if (!isNote) isVertical = (referenceObj as Beatmap.Swap).type == Beatmap.SwapType.Vertical;
     }
 
+    /// <summary> Force an object inside of the bounds of the map visuals in the editor. </summary>
+    /// <param name="obj"> The object to force inside. </param>
     public static void ForceInside(GameObject obj)
     {
         var screenPos = EditorHandler.VisualToScreen(obj.transform.position);
@@ -364,16 +412,18 @@ public class TransformGizmo : MonoBehaviour
         obj.transform.position = EditorHandler.ScreenToVisual(screenPos);
     }
 
+    /// <summary> Deselect the selected object. </summary>
     public static void Deselect()
     {
         if (selectedObj == null) return;
         objDisplay.ChangeOutline(DisplayedObject.OutlineType.OFF);
-        FinishDrag();
+        FinishTimeDrag();
         selectedObj = null;
         referenceObj = null;
         self.SetActive(false);
     }
 
+    /// <summary> Start a translation with the transform gizmo. </summary>
     void StartTranslation()
     {
         if (isNote)
@@ -388,6 +438,7 @@ public class TransformGizmo : MonoBehaviour
         duplicating = false;
     }
 
+    /// <summary> Cancel a translation with the transform gizmo. </summary>
     void CancelTranslation()
     {
         if (selectedObj == null) return;
@@ -412,11 +463,14 @@ public class TransformGizmo : MonoBehaviour
         transformMode = TransformMode.IDLE;
     }
 
+    /// <summary> Finish a translation with the transform gizmo. </summary>
     void FinishTranslation()
     {
+        // Resetting transform gizmo state
         transformMode = TransformMode.IDLE;
         if (Input.GetMouseButtonDown(0)) avoidDeselect = true;
 
+        // Register duplication action
         if (duplicating)
         {
             var placeAction = new EditorHandler.PlaceAction();
@@ -426,27 +480,33 @@ public class TransformGizmo : MonoBehaviour
 
         if (isNote)
         {
+            // Get normalized (0-1) screen coordinates of note
             Vector2 notePos = EditorHandler.VisualToScreen(selectedObj.transform.position);
             notePos.x /= Screen.width;
             notePos.y /= Screen.height;
 
+            // Start creating action
             var action = new EditorHandler.TranslateNoteAction();
             action.obj = referenceObj;
 
+            // Store information into difficulty note
             var referenceNote = referenceObj as Beatmap.Note;
             action.startPos = new Vector2(referenceNote.x, referenceNote.y);
             referenceNote.x = notePos.x;
             referenceNote.y = notePos.y;
             action.endPos = new Vector2(referenceNote.x, referenceNote.y);
 
+            // Finalize
             if (duplicating) return;
             if (action.startPos.x != action.endPos.x || action.startPos.y != action.endPos.y)
                 EditorHandler.AddAction(action);
         }
         else
         {
+            // Store information into difficulty swap
             (referenceObj as Beatmap.Swap).type = isVertical ? Beatmap.SwapType.Vertical : Beatmap.SwapType.Horizontal;
 
+            // Register action
             var action = new EditorHandler.MoveSwapAction();
             action.obj = referenceObj;
             action.startVertical = startVertical;
@@ -456,8 +516,10 @@ public class TransformGizmo : MonoBehaviour
         }
     }
 
-    float GetMouseAngle() => Utils.GetAngleFromPos(Input.mousePosition, selectedObj.transform.position);
+    /// <summary> Get the angle from the selected object to the mouse. </summary>
+    float GetMouseAngle() => Utils.GetAngleFromPos2D(Input.mousePosition, selectedObj.transform.position);
 
+    /// <summary> Start a rotation with the transform gizmo. </summary>
     void StartRotation()
     {
         startMouseRot = GetMouseAngle();
@@ -467,6 +529,7 @@ public class TransformGizmo : MonoBehaviour
         duplicating = false;
     }
 
+    /// <summary> Cancel a rotation with the transform gizmo. </summary>
     void CancelRotation()
     {
         if (selectedObj == null) return;
@@ -479,6 +542,7 @@ public class TransformGizmo : MonoBehaviour
         transformMode = TransformMode.IDLE;
     }
 
+    /// <summary> Finish a rotation with the transform gizmo. </summary>
     void FinishRotation()
     {
         mapVisuals.CheckSwaps();
@@ -510,19 +574,22 @@ public class TransformGizmo : MonoBehaviour
         }
     }
 
+    /// <summary> Cancel any ongoing actions with the transform gizmo. </summary>
     void CancelAll()
     {
         if (transformMode == TransformMode.TRANSLATING) CancelTranslation();
         if (transformMode == TransformMode.ROTATING) CancelRotation();
     }
 
+    /// <summary> Finish any ongoing actions with the transform gizmo. </summary>
     void FinishAll()
     {
         if (transformMode == TransformMode.TRANSLATING) FinishTranslation();
         if (transformMode == TransformMode.ROTATING) FinishRotation();
     }
 
-    static void FinishDrag()
+    /// <summary> Finish dragging the selected object through the timeline. </summary>
+    static void FinishTimeDrag()
     {
         if (!timeDragging) return;
         timeDragging = false;
@@ -533,6 +600,7 @@ public class TransformGizmo : MonoBehaviour
         EditorHandler.AddAction(action);
     }
 
+    /// <summary> Start dragging the selected object on the X axis. </summary>
     public void DragX()
     {
         dragging = true;
@@ -540,7 +608,8 @@ public class TransformGizmo : MonoBehaviour
         StartTranslation();
         lockedX = true;
     }
-
+    
+    /// <summary> Start dragging the selected object on the Y axis. </summary>
     public void DragY()
     {
         dragging = true;
@@ -549,6 +618,7 @@ public class TransformGizmo : MonoBehaviour
         lockedY = true;
     }
 
+    /// <summary> Start drag rotating the selected object. </summary>
     public void DragRotate()
     {
         dragging = true;
@@ -556,6 +626,7 @@ public class TransformGizmo : MonoBehaviour
         StartRotation();
     }
 
+    /// <summary> Update the selected swap to be horizontal. </summary>
     public void MakeSwapHorizontal()
     {
         if (isNote || !isVertical) return;
@@ -567,6 +638,7 @@ public class TransformGizmo : MonoBehaviour
         rect.sizeDelta = sizeDelta;
     }
 
+    /// <summary> Update the selected swap to be vertical. </summary>
     public void MakeSwapVertical()
     {
         if (isNote || isVertical) return;
@@ -578,6 +650,7 @@ public class TransformGizmo : MonoBehaviour
         rect.sizeDelta = sizeDelta;
     }
 
+    /// <summary> Redraw the map visuals, while re-selecting the selected object afterward. </summary>
     public void RedrawVisuals()
     {
         var oldSelectedObj = referenceObj;
