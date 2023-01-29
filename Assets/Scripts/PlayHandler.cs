@@ -177,6 +177,8 @@ public class PlayHandler : MonoBehaviour
         // Initialize info and map visuals
         info = Beatmap.Active.info;
         mapVisuals.diff = diff;
+        mapVisuals.spawnCutoff = Utils.SecondsToBeat(startSeconds, info.BPM);
+        seconds = Math.Max(startSeconds - 1, 0);
 
         mapVisuals.onMirrorUpdate = () =>
         {
@@ -238,11 +240,7 @@ public class PlayHandler : MonoBehaviour
     }
 
     /// <summary> Restart the level </summary>
-    public void Restart()
-    {
-        seconds = startSeconds;
-        Transition.Load("Playing");
-    }
+    public void Restart() => Transition.Load("Playing");
 
     /// <summary> Exit the level </summary>
     public void RunExit() => exit();

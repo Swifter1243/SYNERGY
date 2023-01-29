@@ -42,6 +42,8 @@ public class MapVisuals : MonoBehaviour
     public Material horizontalMirrorMat;
     /// <summary> Whether these visuals are for gameplay. </summary>
     public bool gameplay = true;
+    /// <summary> Optional threshold for beat to spawn objects. </summary>
+    public float spawnCutoff = 0;
 
     // Initialization.
     void Awake()
@@ -205,6 +207,9 @@ public class MapVisuals : MonoBehaviour
     /// <param name="obj"> Object to check. </param>
     void CheckObjectSpawn(Beatmap.GameplayObject obj)
     {
+        // Don't spawn if object is below cutoff.
+        if (obj.time < spawnCutoff) return;
+
         // Only spawn if object isn't already onscreen.
         if (isOnScreen(obj) && !onScreenObjs.ContainsKey(obj))
         {

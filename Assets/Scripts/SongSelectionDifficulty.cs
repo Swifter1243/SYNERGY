@@ -71,7 +71,6 @@ public class SongSelectionDifficulty : MonoBehaviour
         var rawData = File.ReadAllText(diffPath);
         var diff = JsonUtility.FromJson<Beatmap.Difficulty>(rawData);
         PlayHandler.diff = diff;
-        PlayHandler.seconds = 0;
         PlayHandler.startSeconds = 0;
 
         PlayHandler.exit = () => Transition.Load("SongSelection");

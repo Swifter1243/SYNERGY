@@ -264,7 +264,6 @@ public class EditorHandler : MonoBehaviour
         PlayHandler.diff = diff;
         PlayHandler.exit = () => Transition.Load("Editor");
         var seconds = Input.GetKey(KeyCode.LeftControl) ? 0 : Utils.BeatToSeconds(scrollBeat, info.BPM);
-        PlayHandler.seconds = seconds;
         PlayHandler.startSeconds = seconds;
         Transition.Load("Playing");
     }

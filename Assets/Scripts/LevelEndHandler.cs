@@ -40,9 +40,5 @@ public class LevelEndHandler : MonoBehaviour
     public void RunExit() => PlayHandler.exit();
 
     /// <summary> Restarts the level. </summary>
-    public void Restart()
-    {
-        PlayHandler.seconds = PlayHandler.startSeconds;
-        Transition.Load("Playing");
-    }
+    public void Restart() => Transition.Load("Playing");
 }
