@@ -127,9 +127,11 @@ public class DisplayedObject : MonoBehaviour
                 if (spawnInFrac != -1)
                 {
                     // Adjust opacity
-                    image.color = Utils.ChangeAlpha(image.color, spawnInFrac);
-                    timingSide1.color = Utils.ChangeAlpha(timingSide1.color, spawnInFrac);
-                    timingSide2.color = Utils.ChangeAlpha(timingSide2.color, spawnInFrac);
+                    var easingWeight = 0.7f;
+                    var alpha = Utils.EaseInExpo(spawnInFrac) * easingWeight + spawnInFrac * (1 - easingWeight);
+                    image.color = Utils.ChangeAlpha(image.color, alpha);
+                    timingSide1.color = Utils.ChangeAlpha(timingSide1.color, alpha);
+                    timingSide2.color = Utils.ChangeAlpha(timingSide2.color, alpha);
 
                     // Move timing sides
                     var easeMotion = Utils.EaseInExpo((1 - spawnInFrac)) * 0.2f;
