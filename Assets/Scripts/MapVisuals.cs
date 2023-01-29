@@ -171,11 +171,12 @@ public class MapVisuals : MonoBehaviour
     /// <summary> Update the video frame and visibility. </summary>
     void UpdateVideo()
     {
-        var videoBeat = beat - info.videoOffset;
-        var seconds = Utils.BeatToSeconds(videoBeat, info.BPM);
-        var isOn = videoBeat >= 0;
+        var videoOffsetSeconds = Utils.BeatToSeconds(info.videoOffset, info.BPM);
+        var seconds = Utils.BeatToSeconds(beat, info.BPM) - videoOffsetSeconds;
+        var videoEndTime = (float)videoPlayer.length;
+        var isOn = seconds >= 0 && seconds < videoEndTime;
         videoTexture.color = Utils.ChangeAlpha(videoTexture.color, isOn ? 1 : 0);
-        if (videoPlayer.isPaused) videoPlayer.time = seconds;
+        if (videoPlayer.isPaused) videoPlayer.time = Mathf.Min(seconds, videoEndTime);
 
         if (videoPlayer.isPlaying && (!isOn || !playing)) videoPlayer.Pause();
         if (!videoPlayer.isPlaying && playing && isOn) videoPlayer.Play();
